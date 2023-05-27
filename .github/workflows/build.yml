@@ -1,0 +1,332 @@
+name: GitHub CI
+on: [push]
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: RelWithDebInfo
+  RELEASE_VERSION: "1.${{ github.run_number }}.${{ github.run_attempt }}"
+
+jobs:
+  linux_multi_arch_build:
+    # The host should always be linux
+    runs-on: ubuntu-latest
+    name: Build on ${{ matrix.distro }} ${{ matrix.arch }}
+
+    # Run steps on a matrix of these arch/distro combinations
+    strategy:
+      matrix:
+        include:
+          - arch: aarch64
+            distro: ubuntu20.04
+          # - arch: armv7
+          #   distro: ubuntu20.04
+          - arch: 386
+            distro: ubuntu18.04
+            base_image: i386/ubuntu:18.04
+          - arch: x86_64
+            distro: ubuntu20.04
+            base_image: amd64/ubuntu:20.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: uraimo/run-on-arch-action@v2
+        name: Run commands
+        id: runcmd
+        with:
+          arch: ${{ matrix.arch }}
+          distro: ${{ matrix.distro }}
+          base_image: ${{ matrix.base_image }}
+
+          # Not required, but speeds up builds by storing container images in
+          # a GitHub package registry.
+          githubToken: ${{ github.token }}
+
+          # Install some dependencies in the container. This speeds up builds if
+          # you are also using githubToken. Any dependencies installed here will
+          # be part of the container image that gets cached, so subsequent
+          # builds don't have to re-install them. The image layer is cached
+          # publicly in your project's package repository, so it is vital that
+          # no secrets are present in the container state or logs.
+          install: |
+            #!/bin/bash
+
+            set -x
+
+            export DEBIAN_FRONTEND=noninteractive
+            export TZ=UTC
+
+            apt update
+            apt install -y apt-transport-https ca-certificates \
+                git build-essential gcc-8 g++-8 libboost-all-dev \
+                python3-pip ninja-build pkg-config \
+                lsb mono-complete nuget
+
+            python3 -m pip install --upgrade pip
+            PIP_ONLY_BINARY=cmake python3 -m pip install cmake || true
+
+            hash cmake 2>/dev/null || {
+                echo "Build CMake from source ..."
+                cd /tmp
+                git clone -b 'v3.25.1' --single-branch --depth 1 https://github.com/Kitware/CMake.git CMake
+                cd CMake
+                ./bootstrap --prefix=/usr/local
+                make -j$(nproc)
+                make install
+                cd ..
+                rm -rf CMake
+            }
+
+            cmake --version
+
+          # Set an output parameter `uname` for use in subsequent steps
+          run: |
+            #!/bin/bash
+
+            set -x
+
+            uname -a
+
+            echo ::set-output name=uname::$(uname -a)
+
+            git config --global --add safe.directory '*'
+
+            export CC=/usr/bin/gcc-8
+            export CXX=/usr/bin/g++-8
+
+            export RELEASE_VERSION="1.${{ github.run_number }}.${{ github.run_attempt }}"
+
+            bash ./utilities/build.sh
+
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: llama_cpp_${{ matrix.distro }}_${{ matrix.arch }}
+          path: build/bin
+          retention-days: 1
+
+      - name: Package Release
+        if: startsWith(github.ref, 'refs/tags/')
+        run: tar czf llama_cpp_${{ matrix.distro }}_${{ matrix.arch }}.tar.gz llama_cpp
+
+      - name: Draft Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: llama_cpp_${{ matrix.distro }}_${{ matrix.arch }}.tar.gz
+          draft: true
+
+  macos_build:
+    name: macOS Build
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Build
+        run: |
+          #!/bin/bash
+
+          set -xe
+
+          brew install libevent zlib pcre2 pkgconfig openssl boost icu4c ninja
+          brew link --force openssl boost pcre2 libevent icu4c
+
+          alias nproc="sysctl -n hw.logicalcpu"
+
+          export RELEASE_VERSION="1.${{ github.run_number }}.${{ github.run_attempt }}"
+          chmod a+x  ./utilities/build.sh
+
+          ./utilities/build.sh
+
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: llama_cpp_darwin64
+          path: build/bin
+          retention-days: 1
+
+      - name: Package Release
+        if: startsWith(github.ref, 'refs/tags/')
+        run: tar czf llama_cpp_darwin64.tar.gz llama_cpp
+
+      - name: Draft Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: llama_cpp_darwin64.tar.gz
+          draft: true
+
+  windows_build:
+    runs-on: windows-latest
+    name: Build on msystem ${{ matrix.msystem }} ${{ matrix.env }}
+
+    # Run steps on a matrix of 3 arch/distro combinations
+    strategy:
+      matrix:
+        include:
+          - { msystem: CLANG64, env: clang-x86_64, name: win64 }
+          - { msystem: CLANG32, env: clang-i686, name: win32 }
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: msys2/setup-msys2@v2
+        with:
+          update: false
+          msystem: ${{matrix.msystem}}
+          install: >-
+            git
+            make
+            patch
+            binutils
+          pacboy: >-
+            toolchain:p
+            cmake:p
+            ninja:p
+            libevent:p
+            pcre2:p
+            boost:p
+      - name: Build
+        run: |
+          #!/bin/bash
+
+          set -xe
+
+          export RELEASE_VERSION="1.${{ github.run_number }}.${{ github.run_attempt }}"
+
+          ./utilities/build.sh
+
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: llama_cpp_${{ matrix.env }}_${{ matrix.name }}
+          path: build/bin
+          retention-days: 1
+
+      - name: Package Release
+        if: startsWith(github.ref, 'refs/tags/')
+        run: 7z a llama_cpp_${{ matrix.env }}_${{ matrix.name }}.7z llama_cpp/
+
+      - name: Draft Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: llama_cpp_${{ matrix.env }}_${{ matrix.name }}.7z
+          draft: true
+
+  build_win_msvc:
+    name: windows-msvc-${{ matrix.arch }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: amd64, name: msvc_win64, triplet: x64-windows-static }
+          - { arch: x86, name: msvc_win32, triplet: x86-windows-static }
+          - {
+              arch: amd64_arm64,
+              name: msvc_arm64,
+              triplet: arm64-windows-static,
+            }
+
+    env:
+      # Indicates the location of the vcpkg as a Git submodule of the project repository.
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+      # Tells vcpkg where binary packages are stored.
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/vcpkg/bincache
+      VCPKG_TARGET_TRIPLET: "${{ matrix.triplet }}"
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: "Create directory '${{ env.VCPKG_DEFAULT_BINARY_CACHE }}'"
+        run: |
+          git submodule add https://github.com/microsoft/vcpkg.git vcpkg && \
+              cd vcpkg && \
+              git checkout 4b6bce313ef917b9635e9287d06225743e242888
+
+          mkdir -p $VCPKG_DEFAULT_BINARY_CACHE
+        shell: bash
+
+      - uses: lukka/get-cmake@latest
+
+      # Restore both vcpkg and its artifacts from the GitHub cache service.
+      - name: Restore vcpkg and its artifacts.
+        uses: actions/cache@v3
+        with:
+          # The first path is the location of vcpkg: it contains the vcpkg executable and data files, as long as the
+          # built package archives (aka binary cache) which are located by VCPKG_DEFAULT_BINARY_CACHE env var.
+          # The other paths starting with '!' are exclusions: they contain termporary files generated during the build of the installed packages.
+          path: |
+            ${{ env.VCPKG_ROOT }}
+            !${{ env.VCPKG_ROOT }}/buildtrees
+            !${{ env.VCPKG_ROOT }}/packages
+            !${{ env.VCPKG_ROOT }}/downloads
+            !${{ env.VCPKG_ROOT }}/installed
+          # The key is composed in a way that it gets properly invalidated: this must happen whenever vcpkg's Git commit id changes, or the list of packages changes. In this case a cache miss must happen and a new entry with a new key with be pushed to GitHub the cache service.
+          # The key includes: hash of the vcpkg.json file, the hash of the vcpkg Git commit id, and the used vcpkg's triplet. The vcpkg's commit id would suffice, but computing an hash out it does not harm.
+          # Note: given a key, the cache content is immutable. If a cache entry has been created improperly, in order the recreate the right content the key must be changed as well, and it must be brand new (i.e. not existing already).
+          key: |
+            ${{ hashFiles( 'vcpkg.json' ) }}-${{ hashFiles( '.git/modules/vcpkg/HEAD' )}}-${{ matrix.triplet }}
+
+      # On Windows runners, let's ensure to have the Developer Command Prompt environment setup correctly.
+      # As used here the Developer Command Prompt created is targeting x64 and using the default the Windows SDK.
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.arch }}
+
+      # Run CMake to generate Ninja project files, using the vcpkg's toolchain file to resolve and install the dependencies as specified in vcpkg.json.
+      - name: Install dependencies and generate project files
+        run: |
+          cmake --compile-no-warning-as-error --preset ninja-multi-vcpkg -DVCPKG_TARGET_TRIPLET="${{ matrix.triplet }}"
+
+      # Build the whole project with Ninja (which is spawn by CMake). Release configuration.
+      - name: Build (Release)
+        run: |
+          $env:RELEASE_VERSION="1.${{ github.run_number }}.${{ github.run_attempt }}"
+          cmake --build --preset ninja-multi-vcpkg-release
+
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: llama_cpp_${{ matrix.name }}
+          path: builds/ninja-multi-vcpkg/bin/
+          retention-days: 1
+
+      - name: Package Release
+        if: startsWith(github.ref, 'refs/tags/')
+        run: 7z a llama_cpp_${{ matrix.name }}.7z builds/ninja-multi-vcpkg/bin/
+
+      - name: Draft Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: llama_cpp_${{ matrix.name }}.7z
+          draft: true
+
+  upload_nupkgs:
+    name: upload
+    runs-on: ubuntu-latest
+    needs: [linux_multi_arch_build, macos_build, windows_build, build_win_msvc]
+    steps:
+      - uses: actions/download-artifact@master
+        with:
+          path: .
+
+      - name: Publish
+        if: startsWith(github.ref, 'refs/heads/master')
+        run: nuget push **\*.nupkg -Source 'https://api.nuget.org/v3/index.json' -ApiKey ${{secrets.NUGET_API_KEY}} -SkipDuplicate

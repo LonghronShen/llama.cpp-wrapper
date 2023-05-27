@@ -1,0 +1,89 @@
+#ifndef FC387553_7F7E_4140_B64D_AC0504B640A9
+#define FC387553_7F7E_4140_B64D_AC0504B640A9
+
+#ifndef __cpp_lib_semaphore
+
+#include <atomic>
+#include <condition_variable>
+#include <cstdint>
+#include <mutex>
+
+namespace llama_cpp {
+namespace compat {
+
+template <std::ptrdiff_t LeastMaxValue = 0, typename TMutex = std::mutex>
+class counting_semaphore {
+private:
+  TMutex _mutex;
+  std::condition_variable _condition;
+  std::atomic_int64_t _count = 0; // Initialized as locked.
+  std::ptrdiff_t _max_size = LeastMaxValue;
+
+public:
+  constexpr std::ptrdiff_t max() noexcept { return _max_size; }
+
+public:
+  constexpr explicit counting_semaphore(std::ptrdiff_t desired) {
+    if (desired >= 0 && desired <= max()) {
+      this->_count = desired;
+    }
+  }
+
+  counting_semaphore(const counting_semaphore &) = delete;
+
+  ~counting_semaphore() {}
+
+  void release() {
+    std::lock_guard<decltype(_mutex)> lock(_mutex);
+    ++_count;
+    _condition.notify_one();
+  }
+
+  void acquire() {
+    std::unique_lock<decltype(_mutex)> lock(_mutex);
+    while (!_count) // Handle spurious wake-ups.
+    {
+      _condition.wait(lock);
+    }
+    --_count;
+  }
+
+  bool try_acquire() {
+    std::lock_guard<decltype(_mutex)> lock(_mutex);
+    if (_count) {
+      --_count;
+      return true;
+    }
+    return false;
+  }
+
+  template <class Rep, class Period>
+  bool try_acquire_for(const std::chrono::duration<Rep, Period> &rel_time) {
+    std::unique_lock<decltype(_mutex)> lock(_mutex);
+    if (_condition.wait_for(lock, rel_time, [&]() { return !_count; })) {
+      --_count;
+      return true;
+    }
+    return false;
+  }
+
+  template <class Clock, class Duration>
+  bool
+  try_acquire_until(const std::chrono::time_point<Clock, Duration> &abs_time) {
+    std::unique_lock<decltype(_mutex)> lock(_mutex);
+    if (_condition.wait_until(lock, abs_time, [&]() { return !_count; })) {
+      --_count;
+      return true;
+    }
+    return false;
+  }
+};
+
+using binary_semaphore = counting_semaphore<1>;
+
+} // namespace compat
+} // namespace llama_cpp
+
+#endif
+
+#endif /* FC387553_7F7E_4140_B64D_AC0504B640A9 */

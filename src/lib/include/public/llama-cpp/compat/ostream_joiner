@@ -1,0 +1,71 @@
+#ifndef AAA7FC88_E5BD_4295_A3EE_DF63A81A6F6E
+#define AAA7FC88_E5BD_4295_A3EE_DF63A81A6F6E
+
+#include <iostream>
+#include <iterator>
+#include <type_traits>
+
+namespace llama_cpp {
+namespace compat {
+
+template <typename _Ty, typename _Elem = char,
+          typename _Traits = std::char_traits<_Elem>>
+class ostream_joiner {
+public:
+  using iterator_category = std::output_iterator_tag;
+  using value_type = _Ty;
+  using difference_type = void;
+  using pointer = void;
+  using reference = void;
+
+private:
+  std::basic_ostream<_Elem, _Traits> *os;
+  _Elem const *delimiter;
+  bool first_elem;
+
+public:
+  typedef _Elem char_type;
+  typedef _Traits traits_type;
+  typedef std::basic_ostream<_Elem, _Traits> ostream_type;
+
+  ostream_joiner(ostream_type &s) : os(&s), delimiter(0), first_elem(true) {}
+
+  ostream_joiner(ostream_type &s, _Elem const *d)
+      : os(&s), delimiter(d), first_elem(true) {}
+
+  ostream_joiner<_Ty, _Elem, _Traits> &operator=(_Ty const &item) {
+    // Here's the only real change from ostream_iterator:
+    // Normally, the '*os << item;' would come before the 'if'.
+    if (!first_elem && delimiter != 0) {
+      *os << delimiter;
+    }
+
+    *os << item;
+    first_elem = false;
+
+    return *this;
+  }
+
+  ostream_joiner<_Ty, _Elem, _Traits> &operator*() { return *this; }
+
+  ostream_joiner<_Ty, _Elem, _Traits> &operator++() { return *this; }
+
+  ostream_joiner<_Ty, _Elem, _Traits> &operator++(int) { return *this; }
+};
+
+template <class _Ty, class CharT, class Traits, class DelimT>
+auto make_ostream_joiner(std::basic_ostream<CharT, Traits> &os,
+                         DelimT &&delimiter) {
+  return ostream_joiner<_Ty, CharT, Traits>(os, delimiter);
+}
+
+template <class CharT, class Traits, class DelimT>
+auto make_ostream_joiner(std::basic_ostream<CharT, Traits> &os,
+                         DelimT &&delimiter) {
+  return ostream_joiner<std::decay_t<DelimT>, CharT, Traits>(os, delimiter);
+}
+
+} // namespace compat
+} // namespace llama_cpp
+
+#endif /* AAA7FC88_E5BD_4295_A3EE_DF63A81A6F6E */

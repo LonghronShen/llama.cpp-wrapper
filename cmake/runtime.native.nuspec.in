@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd">
+    <metadata minClientVersion="2.12">
+        <id>@RUNTIME_NUGET_PACKAGE_FULL_ID@</id>
+        <version>@RUNTIME_NUGET_PACKAGE_VERSION@</version>
+        <title>@RUNTIME_NUGET_PACKAGE_FULL_TITLE@</title>
+        <authors>@RUNTIME_NUGET_PACKAGE_AUTHORS@</authors>
+        <owners>@RUNTIME_NUGET_PACKAGE_AUTHORS@</owners>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <license type="expression">MIT</license>
+        <projectUrl>@RUNTIME_NUGET_PACKAGE_PROJECT_URL@</projectUrl>
+        <!-- <iconUrl>@RUNTIME_NUGET_PACKAGE_PROJECT_ICON_URL@</iconUrl> -->
+        <description>@RUNTIME_NUGET_PACKAGE_PROJECT_DESCRIPTION@</description>
+    </metadata>
+    <files>
+        <file src="*.dll" target="runtimes\@RUNTIME_NUGET_PLATFORM_IDENTIFIER@\native\" />
+        <file src="*.so" target="runtimes\@RUNTIME_NUGET_PLATFORM_IDENTIFIER@\native\" />
+        <file src="*.dylib" target="runtimes\@RUNTIME_NUGET_PLATFORM_IDENTIFIER@\native\" />
+    </files>
+</package>

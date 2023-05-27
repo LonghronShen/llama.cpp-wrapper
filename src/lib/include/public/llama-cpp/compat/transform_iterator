@@ -1,0 +1,68 @@
+#ifndef D1FA266F_94E6_4439_8659_5D63775733AD
+#define D1FA266F_94E6_4439_8659_5D63775733AD
+
+#include <algorithm>
+#include <iterator>
+#include <type_traits>
+#include <vector>
+
+namespace llama_cpp {
+namespace compat {
+
+template <typename _Iterator, typename _Functor> class transform_iterator {
+public:
+  using iteator_value_type =
+      typename std::iterator_traits<_Iterator>::value_type;
+  using iteator_difference_type =
+      typename std::iterator_traits<_Iterator>::difference_type;
+  using iteator_pointer = typename std::iterator_traits<_Iterator>::pointer;
+
+  using value_type =
+      typename std::invoke_result<_Functor, iteator_value_type>::type;
+
+  using iterator_category = std::output_iterator_tag;
+  using difference_type = iteator_difference_type;
+  using pointer = value_type *;
+  using reference = value_type &;
+
+  transform_iterator() = default;
+
+  transform_iterator(_Iterator iterator, _Functor functor)
+      : _iterator(iterator), _functor(functor) {}
+
+  transform_iterator &operator++() {
+    ++_iterator;
+    return *this;
+  }
+
+  transform_iterator operator++(int) {
+    transform_iterator temp(*this);
+    ++(*this);
+    return temp;
+  }
+
+  bool operator==(const transform_iterator &other) const {
+    return _iterator == other._iterator;
+  }
+
+  bool operator!=(const transform_iterator &other) const {
+    return !(*this == other);
+  }
+
+  value_type operator*() const { return _functor(*_iterator); }
+
+private:
+  _Iterator _iterator;
+  _Functor _functor;
+};
+
+template <typename _Iterator, typename _Functor>
+transform_iterator<_Iterator, _Functor>
+make_transform_iterator(_Iterator iterator, _Functor functor) {
+  return transform_iterator<_Iterator, _Functor>(iterator, functor);
+}
+
+} // namespace compat
+} // namespace llama_cpp
+
+#endif /* D1FA266F_94E6_4439_8659_5D63775733AD */
