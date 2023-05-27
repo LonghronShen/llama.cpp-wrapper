@@ -68,6 +68,8 @@ jobs:
                 python3-pip ninja-build pkg-config \
                 lsb nuget
 
+            update-ca-certificates
+
             nuget update -Self
 
             python3 -m pip install --upgrade pip
