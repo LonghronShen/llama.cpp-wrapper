@@ -66,7 +66,9 @@ jobs:
             apt install -y apt-transport-https ca-certificates \
                 git build-essential gcc-8 g++-8 libboost-all-dev \
                 python3-pip ninja-build pkg-config \
-                lsb mono-complete nuget
+                lsb nuget
+
+            nuget update -Self
 
             python3 -m pip install --upgrade pip
             PIP_ONLY_BINARY=cmake python3 -m pip install cmake || true
