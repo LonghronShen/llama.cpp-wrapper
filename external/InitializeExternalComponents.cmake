@@ -117,7 +117,7 @@ endif()
 set(LLAMA_BUILD_EXAMPLES ON CACHE STRING "LLAMA_BUILD_EXAMPLES" FORCE)
 FetchContent_Declare(llama_cpp
   GIT_REPOSITORY https://github.com/ggerganov/llama.cpp.git
-  GIT_TAG master)
+  GIT_TAG 66874d4fbcc7866377246efbcee938e8cc9c7d76)
 
 FetchContent_GetProperties(llama_cpp)
 
