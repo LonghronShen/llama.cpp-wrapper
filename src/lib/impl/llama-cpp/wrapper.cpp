@@ -10,7 +10,9 @@
 #include <vector>
 
 #include <examples/common.h>
+#include <ggml.h>
 #include <llama.h>
+
 
 #include <llama-cpp/llama.hpp>
 #include <llama-cpp/utils.hpp>

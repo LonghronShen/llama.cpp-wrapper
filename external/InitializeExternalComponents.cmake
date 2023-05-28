@@ -21,7 +21,6 @@ if(Boost_FOUND)
   message(STATUS "** Boost Libraries Directory: ${Boost_LIBRARY_DIRS}")
   message(STATUS "** Boost Libraries: ${Boost_LIBRARIES}")
   include_directories(${Boost_INCLUDE_DIRS})
-  add_compile_definitions("MIME_TYPES_USE_BOOST")
 else()
   if(WIN32)
     message(WARNING "Plase check your vcpkg settings or global environment variables for the boost library.")
@@ -123,7 +122,17 @@ FetchContent_GetProperties(llama_cpp)
 if(NOT llama_cpp_POPULATED)
   FetchContent_Populate(llama_cpp)
   add_subdirectory(${llama_cpp_SOURCE_DIR} ${llama_cpp_BINARY_DIR} EXCLUDE_FROM_ALL)
-  set_target_properties(llama PROPERTIES OUTPUT_NAME llama-cpp)
+
+  set_target_properties(ggml PROPERTIES
+    WINDOWS_EXPORT_ALL_SYMBOLS ON
+    POSITION_INDEPENDENT_CODE ON
+  )
+
+  set_target_properties(llama PROPERTIES
+    OUTPUT_NAME llama-cpp
+    WINDOWS_EXPORT_ALL_SYMBOLS ON
+    POSITION_INDEPENDENT_CODE ON
+  )
 
   if(LLAMA_CPP_WRAPPER_USE_OPENBLAS)
     target_compile_definitions(ggml PUBLIC "GGML_USE_OPENBLAS")

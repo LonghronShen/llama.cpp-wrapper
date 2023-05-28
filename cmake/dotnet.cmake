@@ -153,7 +153,7 @@ function(make_runtime_native_nupkg target namespace id)
             COMMAND ${MONO_EXECUTABLE} ${NUGET_EXECUTABLE} pack "${target_spec_file}" -BasePath $<TARGET_FILE_DIR:${target}>
             WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
             DEPENDS "${target}"
-            COMMENT "Building NuGet package for ${RUNTIME_NUGET_PACKAGE_FULL_ID} in '$<TARGET_FILE_DIR:${target}>'"
+            COMMENT "Building NuGet package for ${RUNTIME_NUGET_PACKAGE_FULL_ID}"
             VERBATIM
         )
     else()
@@ -162,7 +162,7 @@ function(make_runtime_native_nupkg target namespace id)
             COMMAND ${NUGET_EXECUTABLE} pack "${target_spec_file}" -BasePath $<TARGET_FILE_DIR:${target}>
             WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
             DEPENDS "${target}"
-            COMMENT "Building NuGet package for ${RUNTIME_NUGET_PACKAGE_FULL_ID} in '$<TARGET_PROPERTY:${target},LIBRARY_OUTPUT_DIRECTORY>/${BIN_DIR}'"
+            COMMENT "Building NuGet package for ${RUNTIME_NUGET_PACKAGE_FULL_ID}"
             VERBATIM
         )
     endif()

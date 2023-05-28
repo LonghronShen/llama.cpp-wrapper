@@ -31,7 +31,7 @@ function(add_lib_internal)
     set(oneValueArgs TYPE ALIAS OUTPUT_LIB_NAME)
     set(multiValueArgs "")
     cmake_parse_arguments(ADD_LIB_INTERNAL "${options}" "${oneValueArgs}"
-                        "${multiValueArgs}" ${ARGN})
+        "${multiValueArgs}" ${ARGN})
 
     set(type "${ADD_LIB_INTERNAL_TYPE}")
     set(alias "${ADD_LIB_INTERNAL_ALIAS}")
@@ -50,6 +50,19 @@ function(add_lib_internal)
         add_library(${internal_lib_name}
             SHARED ${src}
         )
+
+        set_target_properties(${internal_lib_name} PROPERTIES
+            # WINDOWS_EXPORT_ALL_SYMBOLS ON
+            POSITION_INDEPENDENT_CODE ON
+        )
+
+        target_compile_definitions(${internal_lib_name}
+            PRIVATE LLAMA_WRAPPER_SHARED
+            PRIVATE LLAMA_WRAPPER_BUILD
+            PRIVATE LLAMA_SHARED
+            PRIVATE LLAMA_BUILD
+            PRIVATE GGML_SHARED
+            PRIVATE GGML_BUILD)
     endif()
 
     if(output_lib_name)
@@ -90,6 +103,6 @@ add_lib_internal(TYPE SHARED ALIAS llama_cpp::llama_cpp-shared OUTPUT_LIB_NAME l
 
 add_lib_internal(TYPE STATIC ALIAS llama_cpp::llama_cpp)
 
-make_runtime_native_nupkg(llama-cpp-wrapper-shared-lib 
-    "${LLAMA_CPP_WRAPPER_NUGET_PACKAGE_NAMESPACE}" 
+make_runtime_native_nupkg(llama-cpp-wrapper-shared-lib
+    "${LLAMA_CPP_WRAPPER_NUGET_PACKAGE_NAMESPACE}"
     "runtime.native.llama.cpp.${CMAKE_CXX_COMPILER_ID}")
