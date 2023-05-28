@@ -54,6 +54,7 @@ function(add_lib_internal)
 
     if(output_lib_name)
         set_target_properties(${internal_lib_name} PROPERTIES OUTPUT_NAME ${output_lib_name})
+        set_target_properties(${internal_lib_name} PROPERTIES PREFIX "")
     endif()
 
     if(NOT(alias STREQUAL ""))
@@ -85,7 +86,7 @@ function(add_lib_internal)
 endfunction()
 
 # =================================================================
-add_lib_internal(TYPE SHARED ALIAS llama_cpp::llama_cpp-shared OUTPUT_LIB_NAME llama)
+add_lib_internal(TYPE SHARED ALIAS llama_cpp::llama_cpp-shared OUTPUT_LIB_NAME libllama)
 
 add_lib_internal(TYPE STATIC ALIAS llama_cpp::llama_cpp)
 

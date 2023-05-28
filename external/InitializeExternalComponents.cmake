@@ -35,7 +35,6 @@ else()
     if(NOT boost_cmake_POPULATED)
       FetchContent_Populate(boost_cmake)
       add_subdirectory(${boost_cmake_SOURCE_DIR} ${boost_cmake_BINARY_DIR} EXCLUDE_FROM_ALL)
-      add_compile_definitions("MIME_TYPES_USE_BOOST")
     endif()
   endif()
 endif()
@@ -140,7 +139,6 @@ if(NOT llama_cpp_POPULATED)
   endif()
 endif()
 
-
 # LLamaSharp
 include(dotnet)
 
@@ -156,7 +154,6 @@ if(NOT llamasharp_POPULATED)
   add_subdirectory(${llamasharp_SOURCE_DIR} ${llamasharp_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
-
 if(MINGW)
   # mingw-bundledlls
   FetchContent_Declare(mingw_bundledlls
@@ -164,6 +161,7 @@ if(MINGW)
     GIT_TAG master)
 
   FetchContent_GetProperties(mingw_bundledlls)
+
   if(NOT mingw_bundledlls_POPULATED)
     FetchContent_Populate(mingw_bundledlls)
 
@@ -179,11 +177,11 @@ if(MINGW)
 
     function(mingw_bundle_dll target_name)
       add_custom_target(${target_name}-deps ALL
-          COMMAND ${CMAKE_COMMAND} -E env MINGW_BUNDLEDLLS_SEARCH_PATH=${MINGW_BUNDLEDLLS_SEARCH_PATH} -- "${Python3_EXECUTABLE}" "${mingw_bundledlls_SOURCE_DIR}/mingw-bundledlls" -l "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/dependencies.log" --force --copy "$<TARGET_FILE:${target_name}>"
-          WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/"
-          DEPENDS ${target_name}
-          COMMENT "Copying MinGW libs ..."
-          VERBATIM
+        COMMAND ${CMAKE_COMMAND} -E env MINGW_BUNDLEDLLS_SEARCH_PATH=${MINGW_BUNDLEDLLS_SEARCH_PATH} -- "${Python3_EXECUTABLE}" "${mingw_bundledlls_SOURCE_DIR}/mingw-bundledlls" -l "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/dependencies.log" --force --copy "$<TARGET_FILE:${target_name}>"
+        WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/"
+        DEPENDS ${target_name}
+        COMMENT "Copying MinGW libs ..."
+        VERBATIM
       )
     endfunction()
   endif()
