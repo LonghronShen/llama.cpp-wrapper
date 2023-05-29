@@ -1,13 +1,13 @@
 LIBRARY LLAMA_CPP_WRAPPER
 EXPORTS
-    set_token_callback
-    load_model
     get_embeddings
     llama_allocate_params
     llama_allocate_params_ex
-    llama_free_params
     llama_free_model
+    llama_free_params
     llama_predict
+    load_model
+    set_token_callback
 
     ggml_abs
     ggml_abs_impl
@@ -182,6 +182,7 @@ EXPORTS
     llama_get_kv_cache_token_count
     llama_get_logits
     llama_get_state_size
+    llama_init_backend
     llama_init_from_file
     llama_load_session_file
     llama_mlock_supported
@@ -208,6 +209,7 @@ EXPORTS
     llama_save_session_file
     llama_set_rng_seed
     llama_set_state_data
+    llama_time_us
     llama_token_bos
     llama_token_eos
     llama_token_nl
