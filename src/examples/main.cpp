@@ -209,7 +209,7 @@ int main(int argc, char *argv[]) {
 
       input = nullptr;
 
-      const auto &final_aws = ctx.predict(text);
+      const auto &final_aws = ctx.predict(text + "\n");
 
       // if (debugMode) {
       //   const auto &embeds = ctx.embeddings(text);

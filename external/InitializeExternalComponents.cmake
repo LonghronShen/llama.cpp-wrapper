@@ -12,6 +12,14 @@ include(FetchContent)
 if(WIN32)
   set(Boost_USE_STATIC_LIBS ON CACHE STRING "Boost_USE_STATIC_LIBS" FORCE)
   set(Boost_USE_STATIC_RUNTIME ON CACHE STRING "Boost_USE_STATIC_RUNTIME" FORCE)
+
+  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(Boost_USE_DEBUG_LIBS ON CACHE STRING "Boost_USE_DEBUG_LIBS" FORCE)
+    set(Boost_USE_DEBUG_RUNTIME ON CACHE STRING "Boost_USE_DEBUG_RUNTIME" FORCE)
+  else()
+    set(Boost_USE_DEBUG_LIBS OFF CACHE STRING "Boost_USE_DEBUG_LIBS" FORCE)
+    set(Boost_USE_DEBUG_RUNTIME OFF CACHE STRING "Boost_USE_DEBUG_RUNTIME" FORCE)
+  endif()
 endif()
 
 find_package(Boost 1.65.1 COMPONENTS thread log log_setup system program_options filesystem coroutine locale regex unit_test_framework serialization)
@@ -20,7 +28,6 @@ if(Boost_FOUND)
   message(STATUS "** Boost Include: ${Boost_INCLUDE_DIR}")
   message(STATUS "** Boost Libraries Directory: ${Boost_LIBRARY_DIRS}")
   message(STATUS "** Boost Libraries: ${Boost_LIBRARIES}")
-  include_directories(${Boost_INCLUDE_DIRS})
 else()
   if(WIN32)
     message(WARNING "Plase check your vcpkg settings or global environment variables for the boost library.")
@@ -113,6 +120,13 @@ endif()
 
 # llama_cpp
 set(LLAMA_BUILD_EXAMPLES ON CACHE STRING "LLAMA_BUILD_EXAMPLES" FORCE)
+
+if(LLAMA_CPP_WRAPPER_USE_AVX512)
+  set(LLAMA_AVX512 ON CACHE STRING "LLAMA_AVX512" FORCE)
+  set(LLAMA_AVX512_VBMI ON CACHE STRING "LLAMA_AVX512_VBMI" FORCE)
+  set(LLAMA_AVX512_VNNI ON CACHE STRING "LLAMA_AVX512_VNNI" FORCE)
+endif()
+
 FetchContent_Declare(llama_cpp
   GIT_REPOSITORY https://github.com/ggerganov/llama.cpp.git
   GIT_TAG 66874d4fbcc7866377246efbcee938e8cc9c7d76)

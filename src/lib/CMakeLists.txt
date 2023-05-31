@@ -91,7 +91,8 @@ function(add_lib_internal)
 
     if(Boost_FOUND)
         target_link_libraries(${internal_lib_name}
-            PUBLIC ${Boost_LIBRARIES}
+            PUBLIC Boost::boost
+            PUBLIC Boost::filesystem
         )
 
         target_compile_definitions(${internal_lib_name} PUBLIC "LLAMA_CPP_WRAPPER_USE_BOOST")

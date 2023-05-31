@@ -13,10 +13,10 @@ if(WIN32)
 
         add_compile_options("/source-charset:utf-8")
 
-        if(NOT CMAKE_BUILD_TYPE)
-            add_compile_options("/MT")
-        else()
+        if(CMAKE_BUILD_TYPE STREQUAL "Debug")
             add_compile_options("/MTd")
+        else()
+            add_compile_options("/MT")
         endif()
 
         set(CompilerFlags

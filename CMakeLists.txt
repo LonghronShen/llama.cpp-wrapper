@@ -17,6 +17,7 @@ set(project_name llama-cpp-wrapper)
 project(${project_name} C CXX)
 
 option(LLAMA_CPP_WRAPPER_USE_OPENBLAS "Build with OpenBlas" OFF)
+option(LLAMA_CPP_WRAPPER_USE_AVX512 "Build with AVX512" OFF)
 
 set(LLAMA_CPP_WRAPPER_NUGET_PACKAGE_NAMESPACE "llama_cpp" CACHE STRING "LLAMA_CPP_WRAPPER_NUGET_PACKAGE_NAMESPACE" FORCE)
 
