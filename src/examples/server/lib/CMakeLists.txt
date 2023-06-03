@@ -32,6 +32,7 @@ target_link_libraries(${project_name}-server-lib
     PUBLIC oatpp-test
     PUBLIC oatpp-swagger
     PUBLIC llama_cpp::llama_cpp
+    PUBLIC cmrc::base
     PRIVATE ${project_name}-assets
 )
 

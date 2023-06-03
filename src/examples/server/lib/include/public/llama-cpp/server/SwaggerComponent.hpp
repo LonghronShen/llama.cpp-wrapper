@@ -28,7 +28,7 @@ public:
         .setLicenseName("Apache License, Version 2.0")
         .setLicenseUrl("http://www.apache.org/licenses/LICENSE-2.0")
 
-        .addServer("http://localhost:8000", "server on localhost");
+        .addServer("http://localhost:5000", "server on localhost");
 
     return builder.build();
   }());
@@ -40,7 +40,7 @@ public:
                          swaggerResources)
   ([] {
     // Make sure to specify correct full path to oatpp-swagger/res folder !!!
-    return oatpp::swagger::Resources::loadResources(OATPP_SWAGGER_RES_PATH);
+    return oatpp::swagger::Resources::loadResources("");
   }());
 };
 

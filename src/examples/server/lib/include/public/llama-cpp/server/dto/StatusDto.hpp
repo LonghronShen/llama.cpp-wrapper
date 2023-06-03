@@ -1,8 +1,8 @@
 #ifndef CEE116D0_FCA1_47BE_93D9_06D5F3D55C0C
 #define CEE116D0_FCA1_47BE_93D9_06D5F3D55C0C
 
-#include <oatpp/core/Types.hpp>
 #include <oatpp/core/macro/codegen.hpp>
+#include <oatpp/core/Types.hpp>
 
 
 #include OATPP_CODEGEN_BEGIN(DTO)

@@ -1,66 +1,46 @@
 #include <iostream>
 #include <string>
 
-#include "AppComponent.hpp"
-#include "controller/MyController.hpp"
+#include <llama-cpp/server/AppComponent.hpp>
 
-#include <oatpp/network/server/Server.hpp>
+#include <llama-cpp/server/controller/PromptController.hpp>
 
-#include <synyi/common/logging/logger.h>
-#include <synyi/common/system/interop/locale.h>
-#include <synyi/map_concept/core/map_concept_wrapper.h>
+#include <oatpp/network/Server.hpp>
+#include <oatpp-swagger/Controller.hpp>
 
 std::string get_env_default(const std::string &env_name,
                             const std::string &defualt_value) {
   auto value = getenv(env_name.c_str());
   auto final = value == nullptr ? defualt_value : std::string(value);
-  WriteLog<char>(log_level::info, "Envrionment Variable {0}: {1}", env_name,
-                 final);
   return final;
 }
 
-/**
- *  run() method.
- *  1) set Environment components.
- *  2) add ApiController's endpoints to router
- *  3) run server
- */
 void run() {
-  std::string S3_ENDPOINT =
-      get_env_default("S3_ENDPOINT", "172.16.127.100:39900");
-  std::string S3_ACCESS_KEY =
-      get_env_default("S3_ACCESS_KEY", "AKIAIOSFODNN7EXAMPLE");
-  std::string S3_ACCESS_TOKEN = get_env_default(
-      "S3_ACCESS_TOKEN", "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY");
-  std::string S3_BUCKET_NAME =
-      get_env_default("S3_BUCKET_NAME", "map-concept-data-pack-runtime");
-  std::string S3_OBJECT_PATH = get_env_default("S3_OBJECT_PATH", "");
-  std::string S3_REGION = get_env_default("S3_REGION", "us-east-1");
-
-  set_s3_config(S3_ENDPOINT.c_str(), S3_ACCESS_KEY.c_str(),
-                S3_ACCESS_TOKEN.c_str(), S3_BUCKET_NAME.c_str(),
-                S3_OBJECT_PATH.c_str(), S3_REGION.c_str());
-
   AppComponent components; // Create scope Environment components
 
-  /* create ApiControllers and add endpoints to router */
+  /* Get router component */
+  OATPP_COMPONENT(std::shared_ptr<oatpp::web::server::HttpRouter>, router);
 
-  auto router = components.httpRouter.getObject();
+  oatpp::web::server::api::Endpoints docEndpoints;
 
-  auto myController = MyController::createShared();
-  myController->addEndpointsToRouter(router);
+  docEndpoints.append(
+      router->addController(PromptController::createShared())->getEndpoints());
+
+  router->addController(oatpp::swagger::Controller::createShared(docEndpoints));
+
+  /* Get connection handler component */
+  OATPP_COMPONENT(std::shared_ptr<oatpp::network::ConnectionHandler>,
+                  connectionHandler);
+
+  /* Get connection provider component */
+  OATPP_COMPONENT(std::shared_ptr<oatpp::network::ServerConnectionProvider>,
+                  connectionProvider);
 
   /* create server */
-
-  oatpp::network::server::Server server(
-      components.serverConnectionProvider.getObject(),
-      components.serverConnectionHandler.getObject());
+  oatpp::network::Server server(connectionProvider, connectionHandler);
 
   OATPP_LOGD("Server", "Running on port %s...",
-             components.serverConnectionProvider.getObject()
-                 ->getProperty("port")
-                 .toString()
-                 ->c_str());
+             connectionProvider->getProperty("port").toString()->c_str());
 
   server.run();
 }
@@ -69,18 +49,11 @@ void run() {
  *  main
  */
 int main(int argc, const char *argv[]) {
-// SetConsoleOutputCodePageAsUTF8();
-#if WIN32
-  SetConsoleOutputCP(CP_UTF8);
-#endif
-
-  init_global_instance(false);
-
   oatpp::base::Environment::init();
 
   run();
 
-  /* Print how much objects were created during app running, and what have
+  /* Print how many objects were created during app running, and what have
    * left-probably leaked */
   /* Disable object counting for release builds using '-D
    * OATPP_DISABLE_ENV_OBJECT_COUNTERS' flag for better performance */

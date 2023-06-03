@@ -163,6 +163,13 @@ if(NOT llama_cpp_POPULATED)
 endif()
 
 # oatpp
+set(OATPP_INSTALL OFF CACHE STRING "OATPP_INSTALL" FORCE)
+set(OATPP_BUILD_TESTS OFF CACHE STRING "OATPP_BUILD_TESTS" FORCE)
+
+if(MSVC)
+  set(OATPP_MSVC_LINK_STATIC_RUNTIME OFF CACHE STRING "OATPP_MSVC_LINK_STATIC_RUNTIME" FORCE)
+endif()
+
 FetchContent_Declare(oatpp
   GIT_REPOSITORY https://github.com/oatpp/oatpp.git
   GIT_TAG master)
@@ -175,7 +182,8 @@ if(NOT oatpp_POPULATED)
 endif()
 
 # oatpp-swagger
-set(OATPP_MODULES_LOCATION "custom" CACHE STRING "OATPP_MODULES_LOCATION" FORCE)
+set(OATPP_MODULES_LOCATION "CUSTOM" CACHE STRING "OATPP_MODULES_LOCATION" FORCE)
+
 FetchContent_Declare(oatpp_swagger
   GIT_REPOSITORY https://github.com/oatpp/oatpp-swagger.git
   GIT_TAG master)
@@ -184,6 +192,7 @@ FetchContent_GetProperties(oatpp_swagger)
 
 if(NOT oatpp_swagger_POPULATED)
   FetchContent_Populate(oatpp_swagger)
+  file(COPY "${CMAKE_CURRENT_LIST_DIR}/patches/oatpp-swagger/src" DESTINATION "${oatpp_swagger_SOURCE_DIR}/")
   add_subdirectory(${oatpp_swagger_SOURCE_DIR} ${oatpp_swagger_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
