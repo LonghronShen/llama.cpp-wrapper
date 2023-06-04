@@ -40,8 +40,11 @@ public:
 
   ENDPOINT("GET", "*", root,
            REQUEST(const std::shared_ptr<IncomingRequest>, request)) {
-    std::string filePath =
-        std::string("dist/") + request->getPathTail()->c_str();
+    std::string requestPath = request->getPathTail()->c_str();
+    if (requestPath == "") {
+      requestPath = "index.html";
+    }
+    const std::string filePath = "dist/" + requestPath;
     auto fs = cmrc::llama_cpp::server::rc::get_filesystem();
     if (fs.exists(filePath)) {
       auto file = fs.open(filePath);

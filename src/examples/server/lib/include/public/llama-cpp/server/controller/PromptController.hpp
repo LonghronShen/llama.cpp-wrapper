@@ -44,7 +44,7 @@ public:
     info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
   }
-  ENDPOINT("POST", "prompt", postPromptMessage,
+  ENDPOINT("POST", "/api/prompt", postPromptMessage,
            BODY_DTO(Object<PromptDto>, promptDto)) {
     return createDtoResponse(Status::CODE_200, PromptDto::createShared());
   }
@@ -56,7 +56,7 @@ public:
     info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
   }
-  ENDPOINT("GET", "prompt", getStaticResponse, PATH(Int32, userId)) {
+  ENDPOINT("GET", "/api/prompt", getStaticResponse, PATH(Int32, userId)) {
     return createResponse(Status::CODE_200, String("Hello from LLama server!"));
   }
 };
