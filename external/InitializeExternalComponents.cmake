@@ -81,6 +81,18 @@ if(NOT argh_POPULATED)
   add_subdirectory(${argh_SOURCE_DIR} ${argh_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
+# parallel-hashmap
+FetchContent_Declare(parallel_hashmap
+  GIT_REPOSITORY https://github.com/greg7mdp/parallel-hashmap.git
+  GIT_TAG master)
+
+FetchContent_GetProperties(parallel_hashmap)
+
+if(NOT parallel_hashmap_POPULATED)
+  FetchContent_Populate(parallel_hashmap)
+  add_subdirectory(${parallel_hashmap_SOURCE_DIR} ${parallel_hashmap_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
+
 # MimeTypes
 FetchContent_Declare(mimetypes
   GIT_REPOSITORY https://github.com/LonghronShen/MimeTypes.git

@@ -34,6 +34,7 @@ target_link_libraries(${project_name}-server-lib
     PUBLIC llama_cpp::llama_cpp
     PUBLIC cmrc::base
     PUBLIC mime_types::mime_types
+    PUBLIC phmap
     PRIVATE ${project_name}-assets
     PRIVATE swagger-ui-assets
 )
