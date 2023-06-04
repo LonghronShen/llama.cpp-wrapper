@@ -38,15 +38,17 @@ public:
     return std::make_shared<StaticController>(objectMapper);
   }
 
-  ENDPOINT("GET", "/", root,
+  ENDPOINT("GET", "*", root,
            REQUEST(const std::shared_ptr<IncomingRequest>, request)) {
-    std::string filePath = request->getPathTail()->c_str();
+    std::string filePath =
+        std::string("dist/") + request->getPathTail()->c_str();
     auto fs = cmrc::llama_cpp::server::rc::get_filesystem();
     if (fs.exists(filePath)) {
       auto file = fs.open(filePath);
       std::string buffer(file.begin(), file.end());
       auto response = createResponse(Status::CODE_200, buffer.c_str());
-      response->putHeader("content-type", mime_types::get_type(filePath));
+      const auto &mime_type = mime_types::get_type(filePath);
+      response->putHeader("content-type", mime_type);
       return response;
     }
     auto response = createResponse(Status::CODE_404);
