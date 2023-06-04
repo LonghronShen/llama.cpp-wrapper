@@ -16,7 +16,8 @@
 
 class ChatService {
   using session_context = std::shared_ptr<llama_cpp::context>;
-  using session_map = phmap::flat_hash_map<std::string, session_context>;
+  using session_map =
+      phmap::parallel_flat_hash_map_m<std::string, session_context>;
 
 public:
   ChatService();
