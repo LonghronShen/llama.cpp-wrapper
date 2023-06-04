@@ -4,9 +4,11 @@
 #include <llama-cpp/server/AppComponent.hpp>
 
 #include <llama-cpp/server/controller/PromptController.hpp>
+#include <llama-cpp/server/controller/StaticController.hpp>
 
-#include <oatpp/network/Server.hpp>
 #include <oatpp-swagger/Controller.hpp>
+#include <oatpp/network/Server.hpp>
+
 
 std::string get_env_default(const std::string &env_name,
                             const std::string &defualt_value) {
@@ -22,6 +24,8 @@ void run() {
   OATPP_COMPONENT(std::shared_ptr<oatpp::web::server::HttpRouter>, router);
 
   oatpp::web::server::api::Endpoints docEndpoints;
+
+  router->addController(StaticController::createShared());
 
   docEndpoints.append(
       router->addController(PromptController::createShared())->getEndpoints());

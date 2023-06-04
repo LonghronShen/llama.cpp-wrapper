@@ -1,8 +1,11 @@
 #ifndef A1118E9F_AA17_4AC7_ACCC_551BC3E270B2
 #define A1118E9F_AA17_4AC7_ACCC_551BC3E270B2
 
+#include <memory>
+
+#include <oatpp-swagger/EmbeddedResources.hpp>
 #include <oatpp-swagger/Model.hpp>
-#include <oatpp-swagger/Resources.hpp>
+
 #include <oatpp/core/macro/component.hpp>
 
 /**
@@ -20,9 +23,9 @@ public:
     oatpp::swagger::DocumentInfo::Builder builder;
 
     builder.setTitle("User entity service")
-        .setDescription("CRUD API Example project with swagger docs")
+        .setDescription("LLama.cpp web server project with swagger docs")
         .setVersion("1.0")
-        .setContactName("Ivan Ovsyanochka")
+        .setContactName("LonghronShen")
         .setContactUrl("https://oatpp.io/")
 
         .setLicenseName("Apache License, Version 2.0")
@@ -40,7 +43,7 @@ public:
                          swaggerResources)
   ([] {
     // Make sure to specify correct full path to oatpp-swagger/res folder !!!
-    return oatpp::swagger::Resources::loadResources("");
+    return std::make_shared<oatpp::swagger::EmbeddedResources>();
   }());
 };
 

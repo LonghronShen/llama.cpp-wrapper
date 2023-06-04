@@ -81,6 +81,18 @@ if(NOT argh_POPULATED)
   add_subdirectory(${argh_SOURCE_DIR} ${argh_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
+# MimeTypes
+FetchContent_Declare(mimetypes
+  GIT_REPOSITORY https://github.com/LonghronShen/MimeTypes.git
+  GIT_TAG master)
+
+FetchContent_GetProperties(mimetypes)
+
+if(NOT mimetypes_POPULATED)
+  FetchContent_Populate(mimetypes)
+  add_subdirectory(${mimetypes_SOURCE_DIR} ${mimetypes_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
+
 # isocline
 FetchContent_Declare(isocline
   GIT_REPOSITORY https://github.com/daanx/isocline.git
@@ -193,7 +205,9 @@ FetchContent_GetProperties(oatpp_swagger)
 if(NOT oatpp_swagger_POPULATED)
   FetchContent_Populate(oatpp_swagger)
   file(COPY "${CMAKE_CURRENT_LIST_DIR}/patches/oatpp-swagger/src" DESTINATION "${oatpp_swagger_SOURCE_DIR}/")
+  file(COPY "${CMAKE_CURRENT_LIST_DIR}/patches/oatpp-swagger/res" DESTINATION "${oatpp_swagger_SOURCE_DIR}/")
   add_subdirectory(${oatpp_swagger_SOURCE_DIR} ${oatpp_swagger_BINARY_DIR} EXCLUDE_FROM_ALL)
+  add_subdirectory(${oatpp_swagger_SOURCE_DIR}/res ${oatpp_swagger_BINARY_DIR}/res EXCLUDE_FROM_ALL)
 endif()
 
 if(MINGW)
