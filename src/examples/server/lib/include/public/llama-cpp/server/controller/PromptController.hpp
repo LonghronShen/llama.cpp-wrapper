@@ -15,6 +15,8 @@
 #include <llama-cpp/server/dto/PromptDto.hpp>
 #include <llama-cpp/server/dto/StatusDto.hpp>
 
+#include <llama-cpp/server/services/ChatService.hpp>
+
 #include <oatpp/core/macro/codegen.hpp>
 #include <oatpp/core/macro/component.hpp>
 #include <oatpp/parser/json/mapping/ObjectMapper.hpp>
@@ -23,6 +25,9 @@
 #include OATPP_CODEGEN_BEGIN(ApiController) //<- Begin Codegen
 
 class PromptController : public oatpp::web::server::api::ApiController {
+private:
+  ChatService _chatService;
+
 public:
   PromptController(OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
       : oatpp::web::server::api::ApiController(objectMapper) {}
@@ -46,7 +51,8 @@ public:
   }
   ENDPOINT("POST", "/api/prompt", postPromptMessage,
            BODY_DTO(Object<PromptDto>, promptDto)) {
-    return createDtoResponse(Status::CODE_200, PromptDto::createShared());
+    const auto &response = this->_chatService.predict(promptDto);
+    return createDtoResponse(Status::CODE_200, response);
   }
 
   ENDPOINT_INFO(getStaticResponse) {
