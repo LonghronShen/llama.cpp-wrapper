@@ -39,7 +39,7 @@ public:
   }
 
   ENDPOINT("GET", "*", root,
-           REQUEST(const std::shared_ptr<IncomingRequest>, request)) {
+           REQUEST(std::shared_ptr<IncomingRequest>, request)) {
     std::string requestPath = request->getPathTail()->c_str();
     if (requestPath == "") {
       requestPath = "index.html";
