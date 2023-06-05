@@ -13,7 +13,6 @@
 #include <ggml.h>
 #include <llama.h>
 
-
 #include <llama-cpp/llama.hpp>
 #include <llama-cpp/utils.hpp>
 #include <llama-cpp/wrapper.h>
@@ -141,7 +140,10 @@ int llama_predict_ex(
 
   if (!token_callback) {
     token_callback = [&](void *_ctx, const std::string &s) {
-      return tokenCallback(_ctx, (char *)s.c_str());
+      if (tokenCallback) {
+        return tokenCallback(_ctx, (char *)s.c_str()) != 0;
+      }
+      return true;
     };
   }
 

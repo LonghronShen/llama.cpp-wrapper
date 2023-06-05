@@ -35,9 +35,7 @@ include_directories(${CMAKE_BINARY_DIR})
 
 include(FixCompileFlags)
 
-if(NOT(CMAKE_BUILD_TYPE STREQUAL "Debug"))
-    add_compile_definitions(OATPP_DISABLE_ENV_OBJECT_COUNTERS)
-endif()
+include(dotnet)
 
 include(external/InitializeExternalComponents.cmake)
 

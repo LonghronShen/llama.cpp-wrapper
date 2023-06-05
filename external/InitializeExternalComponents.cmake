@@ -81,6 +81,30 @@ if(NOT argh_POPULATED)
   add_subdirectory(${argh_SOURCE_DIR} ${argh_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
+# parallel-hashmap
+FetchContent_Declare(parallel_hashmap
+  GIT_REPOSITORY https://github.com/greg7mdp/parallel-hashmap.git
+  GIT_TAG master)
+
+FetchContent_GetProperties(parallel_hashmap)
+
+if(NOT parallel_hashmap_POPULATED)
+  FetchContent_Populate(parallel_hashmap)
+  add_subdirectory(${parallel_hashmap_SOURCE_DIR} ${parallel_hashmap_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
+
+# MimeTypes
+FetchContent_Declare(mimetypes
+  GIT_REPOSITORY https://github.com/LonghronShen/MimeTypes.git
+  GIT_TAG master)
+
+FetchContent_GetProperties(mimetypes)
+
+if(NOT mimetypes_POPULATED)
+  FetchContent_Populate(mimetypes)
+  add_subdirectory(${mimetypes_SOURCE_DIR} ${mimetypes_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
+
 # isocline
 FetchContent_Declare(isocline
   GIT_REPOSITORY https://github.com/daanx/isocline.git
@@ -162,19 +186,40 @@ if(NOT llama_cpp_POPULATED)
   endif()
 endif()
 
-# LLamaSharp
-include(dotnet)
+# oatpp
+set(OATPP_INSTALL OFF CACHE STRING "OATPP_INSTALL" FORCE)
+set(OATPP_BUILD_TESTS OFF CACHE STRING "OATPP_BUILD_TESTS" FORCE)
 
-FetchContent_Declare(llamasharp
-  GIT_REPOSITORY https://github.com/SciSharp/LLamaSharp.git
+if(MSVC)
+  set(OATPP_MSVC_LINK_STATIC_RUNTIME OFF CACHE STRING "OATPP_MSVC_LINK_STATIC_RUNTIME" FORCE)
+endif()
+
+FetchContent_Declare(oatpp
+  GIT_REPOSITORY https://github.com/oatpp/oatpp.git
   GIT_TAG master)
 
-FetchContent_GetProperties(llamasharp)
+FetchContent_GetProperties(oatpp)
 
-if(NOT llamasharp_POPULATED)
-  FetchContent_Populate(llamasharp)
-  file(COPY "${CMAKE_CURRENT_LIST_DIR}/patches/llamasharp/CMakeLists.txt" DESTINATION "${llamasharp_SOURCE_DIR}/")
-  add_subdirectory(${llamasharp_SOURCE_DIR} ${llamasharp_BINARY_DIR} EXCLUDE_FROM_ALL)
+if(NOT oatpp_POPULATED)
+  FetchContent_Populate(oatpp)
+  add_subdirectory(${oatpp_SOURCE_DIR} ${oatpp_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
+
+# oatpp-swagger
+set(OATPP_MODULES_LOCATION "CUSTOM" CACHE STRING "OATPP_MODULES_LOCATION" FORCE)
+
+FetchContent_Declare(oatpp_swagger
+  GIT_REPOSITORY https://github.com/oatpp/oatpp-swagger.git
+  GIT_TAG master)
+
+FetchContent_GetProperties(oatpp_swagger)
+
+if(NOT oatpp_swagger_POPULATED)
+  FetchContent_Populate(oatpp_swagger)
+  file(COPY "${CMAKE_CURRENT_LIST_DIR}/patches/oatpp-swagger/src" DESTINATION "${oatpp_swagger_SOURCE_DIR}/")
+  file(COPY "${CMAKE_CURRENT_LIST_DIR}/patches/oatpp-swagger/res" DESTINATION "${oatpp_swagger_SOURCE_DIR}/")
+  add_subdirectory(${oatpp_swagger_SOURCE_DIR} ${oatpp_swagger_BINARY_DIR} EXCLUDE_FROM_ALL)
+  add_subdirectory(${oatpp_swagger_SOURCE_DIR}/res ${oatpp_swagger_BINARY_DIR}/res EXCLUDE_FROM_ALL)
 endif()
 
 if(MINGW)

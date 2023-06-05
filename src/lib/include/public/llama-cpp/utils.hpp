@@ -267,6 +267,18 @@ std::string inline get_extension_from_path(const std::string &path) {
 #endif
 }
 
+std::string inline normalize_path(const std::string &messyPath) {
+#ifdef LLAMA_CPP_WRAPPER_USE_BOOST
+  const auto &path = boost::filesystem::canonical(messyPath);
+  return path.generic_string();
+#else
+  std::filesystem::path path(messyPath);
+  std::filesystem::path canonicalPath = std::filesystem::weakly_canonical(path);
+  std::string npath = canonicalPath.make_preferred().string();
+  return npath;
+#endif
+}
+
 } // namespace filesystem
 } // namespace internal
 } // namespace llama_cpp
