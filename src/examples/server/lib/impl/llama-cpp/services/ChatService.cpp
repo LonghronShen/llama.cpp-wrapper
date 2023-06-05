@@ -5,6 +5,7 @@
 #include <string>
 
 #include <llama-cpp/llama.hpp>
+#include <llama-cpp/utils.hpp>
 
 #include <llama-cpp/server/dto/PromptDto.hpp>
 
@@ -36,7 +37,7 @@ std::string ChatService::map_model_path(const std::string &name) const {
   if (item == this->_models.end()) {
     throw std::runtime_error("Model not found");
   }
-  return item->second;
+  return llama_cpp::internal::filesystem::normalize_path(item->second);
 }
 
 std::size_t ChatService::get_threads_count(std::size_t count) const {
@@ -68,23 +69,23 @@ ChatService::predict(const oatpp::Object<PromptDto> &dto) {
   const std::string session_id = dto->session_id;
 
   auto prompt = dto->prompt;
-  auto bot = dto->bot;
   auto model = this->map_model_path(dto->model);
-  auto temperature = dto->temperature;
-  auto n_predict = dto->n_predict;
-  auto n_ctx = dto->n_ctx;
-  auto n_keep = dto->n_keep;
 
-  auto top_p = dto->top_p;
-  auto top_k = dto->top_k;
-  auto ignore_eos = dto->ignore_eos;
-  auto repeat_last_n = dto->repeat_last_n;
-  auto batch_size = dto->batch_size;
-  auto threads = this->get_threads_count(dto->threads);
+  auto temperature = dto->temperature.getValue(0.8);
+  auto n_predict = dto->n_predict.getValue(-1);
+  auto n_ctx = dto->n_ctx.getValue(512);
+  auto n_keep = dto->n_keep.getValue(0);
 
-  auto frequency_penalty = dto->frequency_penalty;
-  auto presence_penalty = dto->presence_penalty;
-  auto repeat_penalty = dto->repeat_penalty;
+  auto top_p = dto->top_p.getValue(0.95);
+  auto top_k = dto->top_k.getValue(40);
+  auto ignore_eos = dto->ignore_eos.getValue(true);
+  auto repeat_last_n = dto->repeat_last_n.getValue(64);
+  auto batch_size = dto->batch_size.getValue(512);
+  auto threads = this->get_threads_count(dto->threads.getValue(0));
+
+  auto frequency_penalty = dto->frequency_penalty.getValue(0);
+  auto presence_penalty = dto->presence_penalty.getValue(0);
+  auto repeat_penalty = dto->repeat_penalty.getValue(1.1);
 
   std::vector<std::string> stop_prompts(dto->stop_prompts->begin(),
                                         dto->stop_prompts->end());
@@ -136,7 +137,7 @@ ChatService::predict(const oatpp::Object<PromptDto> &dto) {
   auto response = PromptDto::createShared();
   response->session_id = session_id;
   response->prompt = prompt;
-  response->bot = bot;
+  response->bot = value;
   response->model = model;
 
   return response;

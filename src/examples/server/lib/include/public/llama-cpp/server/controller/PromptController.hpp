@@ -9,12 +9,14 @@
 #include <sstream>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <unordered_map>
 #include <vector>
 
 #include <llama-cpp/server/dto/PromptDto.hpp>
 #include <llama-cpp/server/dto/StatusDto.hpp>
 
+#include <llama-cpp/server/controller/SwaggerApiController.hpp>
 #include <llama-cpp/server/services/ChatService.hpp>
 
 #include <oatpp/core/macro/codegen.hpp>
@@ -24,13 +26,13 @@
 
 #include OATPP_CODEGEN_BEGIN(ApiController) //<- Begin Codegen
 
-class PromptController : public oatpp::web::server::api::ApiController {
+class PromptController : public SwaggerApiController {
 private:
   ChatService _chatService;
 
 public:
   PromptController(OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
-      : oatpp::web::server::api::ApiController(objectMapper) {}
+      : SwaggerApiController(objectMapper) {}
 
 public:
   static const std::shared_ptr<PromptController> createShared(OATPP_COMPONENT(
@@ -62,8 +64,20 @@ public:
     info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
   }
-  ENDPOINT("GET", "/api/prompt", getStaticResponse, PATH(Int32, userId)) {
+  ENDPOINT("GET", "/api/prompt", getStaticResponse) {
     return createResponse(Status::CODE_200, String("Hello from LLama server!"));
+  }
+
+  ENDPOINT_INFO(getParameters) {
+    info->summary = "Get parameters.";
+
+    info->addResponse<Object<ParamsDto>>(Status::CODE_200, "application/json");
+    info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
+    info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
+  }
+  ENDPOINT("GET", "/api/prompt/parameters", getParameters) {
+    const auto &params = this->_chatService.get_params();
+    return createDtoResponse(Status::CODE_200, params);
   }
 };
 

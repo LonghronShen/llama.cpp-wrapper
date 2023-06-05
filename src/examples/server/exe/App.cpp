@@ -1,14 +1,16 @@
 #include <iostream>
 #include <string>
+#include <type_traits>
+#include <vector>
 
 #include <llama-cpp/server/AppComponent.hpp>
 
 #include <llama-cpp/server/controller/PromptController.hpp>
 #include <llama-cpp/server/controller/StaticController.hpp>
+#include <llama-cpp/server/controller/SwaggerApiController.hpp>
 
 #include <oatpp-swagger/Controller.hpp>
 #include <oatpp/network/Server.hpp>
-
 
 std::string get_env_default(const std::string &env_name,
                             const std::string &defualt_value) {
@@ -17,20 +19,49 @@ std::string get_env_default(const std::string &env_name,
   return final;
 }
 
+template <typename T>
+std::shared_ptr<oatpp::web::server::api::ApiController>
+add_endpoints(oatpp::web::server::api::Endpoints &docEndpoints,
+              std::shared_ptr<T> controller) {
+  static_assert(
+      std::is_base_of<oatpp::web::server::api::ApiController, T>::value,
+      "type parameter of this class must derive from ApiController.");
+  if (is_swagger_enabled<T>) {
+    docEndpoints.append(controller->getEndpoints());
+  }
+  return controller;
+}
+
+template <class... Args>
+std::shared_ptr<oatpp::web::server::HttpRouter>
+add_controllers(std::shared_ptr<oatpp::web::server::HttpRouter> router,
+                Args... args) {
+  using controller_t = std::shared_ptr<oatpp::web::server::api::ApiController>;
+
+  oatpp::web::server::api::Endpoints docEndpoints;
+
+  std::vector<controller_t> controllers = {
+      add_endpoints(docEndpoints, args)...};
+
+  router->addController(oatpp::swagger::Controller::createShared(docEndpoints));
+
+  for (auto controller : controllers) {
+    router->addController(controller);
+  }
+
+  return router;
+}
+
 void run() {
   AppComponent components; // Create scope Environment components
 
   /* Get router component */
   OATPP_COMPONENT(std::shared_ptr<oatpp::web::server::HttpRouter>, router);
 
-  oatpp::web::server::api::Endpoints docEndpoints;
+  add_controllers(router, PromptController::createShared(),
+                  StaticController::createShared());
 
-  router->addController(StaticController::createShared());
-
-  docEndpoints.append(
-      router->addController(PromptController::createShared())->getEndpoints());
-
-  router->addController(oatpp::swagger::Controller::createShared(docEndpoints));
+  router->logRouterMappings();
 
   /* Get connection handler component */
   OATPP_COMPONENT(std::shared_ptr<oatpp::network::ConnectionHandler>,
