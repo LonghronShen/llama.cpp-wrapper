@@ -20,6 +20,35 @@ retry() {
     done
 }
 
+install_nodejs() {
+    local NVM_ARCH
+    local NVM_MIRROR="https://nodejs.org/dist"
+    local NVM_VERSION="v18.4.0"
+    HOST_ARCH=$(dpkg --print-architecture)
+    case "${HOST_ARCH}" in
+        i*86)
+            NVM_ARCH="x86"
+            NVM_MIRROR="https://unofficial-builds.nodejs.org/download/release"
+            ;;
+        x86_64 | amd64)
+            NVM_ARCH="x64"
+            ;;
+        aarch64 | armv8l)
+            NVM_ARCH="arm64"
+            ;;
+        *)
+            NVM_ARCH="${HOST_ARCH}"
+            ;;
+    esac
+
+    local FILE_NAME="node-$NVM_VERSION-linux-$NVM_ARCH.tar.gz"
+    local URL="$NVM_MIRROR/$NVM_VERSION/$FILE_NAME"
+
+    wget "$NVM_MIRROR/$NVM_VERSION/node-$NVM_VERSION-linux-$NVM_ARCH.tar.gz"
+    tar -C /usr/local --strip-components 1 -xzf node-v18.4.0-linux-$NVM_ARCH.tar.gz
+    rm node-v18.4.0-linux-$NVM_ARCH.tar.gz
+}
+
 unameOut="$(uname -s)"
 arch="x64"
 case "${unameOut}" in
@@ -39,28 +68,7 @@ case "${unameOut}" in
 
         wget -O /usr/lib/nuget/NuGet.exe https://dist.nuget.org/win-x86-commandline/v4.9.6/nuget.exe
 
-        mono -V
-
-        npm_version="$(apt-cache madison npm | grep -oP "\d+(\.\d+)+")"
-        bash "$SCRIPTPATH/vercmp.sh" "$npm_version" "6.14.0"
-        if [[ $? -eq 2 ]]; then
-            HOST_ARCH=$(dpkg --print-architecture)
-            NVM_ARCH=
-            case "${HOST_ARCH}" in
-                x86_64 | amd64) NVM_ARCH="x64" ;;
-                i*86) NVM_ARCH="x86" ;;
-                aarch64 | armv8l) NVM_ARCH="arm64" ;;
-                *) NVM_ARCH="${HOST_ARCH}" ;;
-            esac
-            wget https://unofficial-builds.nodejs.org/download/release/v18.4.0/node-v18.4.0-linux-$NVM_ARCH.tar.gz
-            tar -C /usr/local --strip-components 1 -xzf node-v18.4.0-linux-$NVM_ARCH.tar.gz
-            rm node-v18.4.0-linux-$NVM_ARCH.tar.gz
-        else
-            apt install -y nodejs npm
-        fi
-
-        node -v
-        npm -v
+        install_nodejs
 
         update-ca-certificates -f
 
@@ -76,9 +84,13 @@ case "${unameOut}" in
             retry 10 apt install -y libboost1.68-dev
         fi
 
-        lsb_release -a
-
         hash cmake 2>/dev/null || { pip3 install -i https://mirrors.aliyun.com/pypi/simple cmake; }
+
+        lsb_release -a
+        mono -V
+        node -v
+        npm -v
+        cmake --version
         ;;
     Darwin*)
         machine=osx
