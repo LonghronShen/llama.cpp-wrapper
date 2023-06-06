@@ -48,6 +48,10 @@ arch="x64"
 case "${unameOut}" in
     Linux*)
         machine=linux
+
+        export DEBIAN_FRONTEND=noninteractive
+        export TZ=UTC
+
         apt clean
         apt update
         retry 10 apt install -y apt-transport-https ca-certificates \
@@ -55,6 +59,8 @@ case "${unameOut}" in
             python3-pip python3-all-dev \
             libicu-dev aria2 libopenblas-dev \
             lsb mono-complete nuget nodejs npm
+
+        npm install -g npm
 
         update-ca-certificates -f
 
