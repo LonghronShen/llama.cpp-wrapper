@@ -2,30 +2,7 @@
 
 set -x
 
-vercmp() {
-    if [[ $1 == "$2" ]]; then
-        return 0
-    fi
-    local IFS=.
-    local i ver1=($1) ver2=($2)
-    # fill empty fields in ver1 with zeros
-    for ((i = ${#ver1[@]}; i < ${#ver2[@]}; i++)); do
-        ver1[i]=0
-    done
-    for ((i = 0; i < ${#ver1[@]}; i++)); do
-        if [[ -z ${ver2[i]} ]]; then
-            # fill empty fields in ver2 with zeros
-            ver2[i]=0
-        fi
-        if ((10#${ver1[i]} > 10#${ver2[i]})); then
-            return 1
-        fi
-        if ((10#${ver1[i]} < 10#${ver2[i]})); then
-            return 2
-        fi
-    done
-    return 0
-}
+SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 
 retry() {
     local -r -i max_attempts="$1"; shift
@@ -60,7 +37,15 @@ case "${unameOut}" in
             libicu-dev aria2 libopenblas-dev \
             lsb mono-complete nuget nodejs npm
 
-        npm install -g npm
+        mono -V
+        node -v
+        npm -v
+
+        bash "$SCRIPTPATH/vercmp.sh" "$(npm -v)" "6.14.0"
+        if [[ $? -ne 2 ]]; then
+            npm install -g npm@latest-6
+            npm -v
+        fi
 
         update-ca-certificates -f
 

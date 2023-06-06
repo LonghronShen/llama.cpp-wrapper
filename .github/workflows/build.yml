@@ -68,7 +68,15 @@ jobs:
                 python3-pip ninja-build pkg-config wget \
                 lsb mono-complete nuget nodejs npm
 
-            npm install -g npm@6-latest
+            mono -V
+            node -v
+            npm -v
+
+            ./utilities/vercmp.sh "$(npm -v)" "6.14.0"
+            if [[ $? -ne 2 ]]; then
+              npm install -g npm@latest-6
+              npm -v
+            fi
 
             wget -O /usr/lib/nuget/NuGet.exe https://dist.nuget.org/win-x86-commandline/v4.9.6/nuget.exe
 
