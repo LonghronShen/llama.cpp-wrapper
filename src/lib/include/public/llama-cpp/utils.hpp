@@ -24,6 +24,7 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/iterator/transform_iterator.hpp>
+#include <boost/range/iterator_range.hpp>
 #else
 #include <llama-cpp/compat/transform_iterator>
 #endif
@@ -277,6 +278,40 @@ std::string inline normalize_path(const std::string &messyPath) {
   std::string npath = canonicalPath.make_preferred().string();
   return npath;
 #endif
+}
+
+using folder_entry = std::tuple<std::string, std::string, bool>;
+
+std::vector<folder_entry> inline get_files_in_directory(
+    const std::string &directoryPath) {
+#ifdef LLAMA_CPP_WRAPPER_USE_BOOST
+  using namespace boost;
+  using namespace boost::filesystem;
+#else
+  using namespace llama_cpp::compat;
+  using namespace std::filesystem;
+#endif
+
+  path p(directoryPath);
+
+  if (is_directory(p)) {
+    using element_type = typename directory_iterator::value_type;
+
+    auto converter = [](const element_type &entry) {
+      return std::make_tuple(entry.path().filename().string(),
+                             entry.path().string(), is_directory(entry.path()));
+    };
+
+    const auto &begin = directory_iterator(directoryPath);
+    const auto &end = directory_iterator{};
+
+    auto t_begin = make_transform_iterator(begin, converter);
+    auto t_end = make_transform_iterator(end, converter);
+
+    return std::vector<folder_entry>(t_begin, t_end);
+  }
+
+  return std::vector<folder_entry>();
 }
 
 } // namespace filesystem

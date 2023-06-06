@@ -2,7 +2,7 @@
 # and leave all files detected as binary untouched.
 * text=auto
 
-*.sh text=auto eof=lf
+*.sh text eof=lf
 
 # (binary is a macro for -text -diff)
 *.png binary

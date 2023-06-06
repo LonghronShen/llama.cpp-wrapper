@@ -20,10 +20,14 @@ ChatService::ChatService(const std::string &path) {
 ChatService::~ChatService() {}
 
 void ChatService::scan_for_models(const std::string &path) {
+  using namespace llama_cpp::internal::filesystem;
   const std::lock_guard<std::mutex> lock(this->_models_mtx);
-  for (const auto &entry : std::filesystem::directory_iterator(path)) {
-    this->_models.emplace(entry.path().filename().string(),
-                          entry.path().string());
+  const auto &items = get_files_in_directory(path);
+  for (const auto &entry : items) {
+    const auto &[fileName, filePath, isDirectory] = entry;
+    if (isDirectory) {
+      this->_models.emplace(fileName, filePath);
+    }
   }
 }
 
