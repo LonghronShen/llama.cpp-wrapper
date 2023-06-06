@@ -2,7 +2,7 @@ FROM ubuntu:22.04 as builder
 
 WORKDIR /app
 
-COPY ./utilities/bootstrap.sh bootstrap.sh
+COPY ./utilities/bootstrap.sh ./utilities/bootstrap.sh
 
 RUN bash ./utilities/bootstrap.sh
 
