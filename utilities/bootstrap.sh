@@ -42,7 +42,7 @@ case "${unameOut}" in
         npm -v
 
         bash "$SCRIPTPATH/vercmp.sh" "$(npm -v)" "6.14.0"
-        if [[ $? -ne 2 ]]; then
+        if [[ $? -eq 2 ]]; then
             npm install -g npm@latest-6
             npm -v
         fi
@@ -50,7 +50,7 @@ case "${unameOut}" in
         update-ca-certificates -f
 
         boost_version="$(apt-cache madison libboost-all-dev | grep -oP "\d+(\.\d+)+")"
-        vercmp "$boost_version" "1.66"
+        bash "$SCRIPTPATH/vercmp.sh" "$boost_version" "1.66"
 
         if [[ $? -ne 2 ]]; then
             retry 10 apt install -y libboost-all-dev
