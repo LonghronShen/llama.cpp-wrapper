@@ -2,10 +2,13 @@ FROM ubuntu:22.04 as builder
 
 WORKDIR /app
 
+COPY ./utilities/bootstrap.sh bootstrap.sh
+
+RUN bash ./utilities/bootstrap.sh
+
 COPY . .
 
-RUN bash ./utilities/bootstrap.sh && \
-    bash ./utilities/build.sh
+RUN bash ./utilities/build.sh
 
 FROM ubuntu:22.04 as runner
 
