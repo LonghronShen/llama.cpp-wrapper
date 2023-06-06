@@ -34,8 +34,10 @@ case "${unameOut}" in
         retry 10 apt install -y apt-transport-https ca-certificates \
             git build-essential ccache ninja-build pkg-config \
             python3-pip python3-all-dev \
-            libicu-dev aria2 libopenblas-dev \
+            libicu-dev aria2 libopenblas-dev wget \
             lsb mono-complete nuget nodejs npm
+
+        wget -O /usr/lib/nuget/NuGet.exe https://dist.nuget.org/win-x86-commandline/v4.9.6/nuget.exe
 
         mono -V
         node -v

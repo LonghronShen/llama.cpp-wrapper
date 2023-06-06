@@ -4,6 +4,7 @@ set -x
 
 vercmp() {
     if [[ $1 == "$2" ]]; then
+        echo "0"
         return 0
     fi
     local IFS=.
@@ -18,12 +19,15 @@ vercmp() {
             ver2[i]=0
         fi
         if ((10#${ver1[i]} > 10#${ver2[i]})); then
-            return 1
+            echo "1"
+            return 0
         fi
         if ((10#${ver1[i]} < 10#${ver2[i]})); then
-            return 2
+            echo "2"
+            return 0
         fi
     done
+    echo "0"
     return 0
 }
 

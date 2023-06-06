@@ -61,6 +61,7 @@ jobs:
 
             vercmp() {
                 if [[ $1 == "$2" ]]; then
+                    echo "0"
                     return 0
                 fi
                 local IFS=.
@@ -75,12 +76,15 @@ jobs:
                         ver2[i]=0
                     fi
                     if ((10#${ver1[i]} > 10#${ver2[i]})); then
-                        return 1
+                        echo "1"
+                        return 0
                     fi
                     if ((10#${ver1[i]} < 10#${ver2[i]})); then
-                        return 2
+                        echo "2"
+                        return 0
                     fi
                 done
+                echo "0"
                 return 0
             }
 
@@ -97,8 +101,8 @@ jobs:
             node -v
             npm -v
 
-            vercmp "$(npm -v)" "6.14.0"
-            if [[ $? -eq 2 ]]; then
+            cmp=$(vercmp "$(npm -v)" "6.14.0")
+            if [[ $cmp -eq 2 ]]; then
               npm install -g npm@latest-6
               npm -v
             fi
