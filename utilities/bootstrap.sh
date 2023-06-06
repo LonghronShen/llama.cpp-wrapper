@@ -44,9 +44,9 @@ case "${unameOut}" in
         npm_version="$(apt-cache madison npm | grep -oP "\d+(\.\d+)+")"
         bash "$SCRIPTPATH/vercmp.sh" "$npm_version" "6.14.0"
         if [[ $? -eq 2 ]]; then
-            arch=$(dpkg --print-architecture)
-            local NVM_ARCH
-            case "${arch}" in
+            HOST_ARCH=$(dpkg --print-architecture)
+            NVM_ARCH=
+            case "${HOST_ARCH}" in
                 x86_64 | amd64) NVM_ARCH="x64" ;;
                 i*86) NVM_ARCH="x86" ;;
                 aarch64 | armv8l) NVM_ARCH="arm64" ;;
