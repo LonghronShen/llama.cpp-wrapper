@@ -54,7 +54,7 @@ case "${unameOut}" in
             git build-essential ccache ninja-build pkg-config \
             python3-pip python3-all-dev \
             libicu-dev aria2 libopenblas-dev \
-            lsb mono-complete nuget
+            lsb mono-complete nuget nodejs npm
 
         update-ca-certificates -f
 
