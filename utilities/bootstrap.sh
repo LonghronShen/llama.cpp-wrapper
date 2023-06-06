@@ -35,19 +35,32 @@ case "${unameOut}" in
             git build-essential ccache ninja-build pkg-config \
             python3-pip python3-all-dev \
             libicu-dev aria2 libopenblas-dev wget \
-            lsb mono-complete nuget nodejs npm
+            lsb mono-complete nuget
 
         wget -O /usr/lib/nuget/NuGet.exe https://dist.nuget.org/win-x86-commandline/v4.9.6/nuget.exe
 
         mono -V
+
+        npm_version="$(apt-cache madison npm | grep -oP "\d+(\.\d+)+")"
+        bash "$SCRIPTPATH/vercmp.sh" "$npm_version" "6.14.0"
+        if [[ $? -eq 2 ]]; then
+            arch=$(dpkg --print-architecture)
+            local NVM_ARCH
+            case "${arch}" in
+                x86_64 | amd64) NVM_ARCH="x64" ;;
+                i*86) NVM_ARCH="x86" ;;
+                aarch64 | armv8l) NVM_ARCH="arm64" ;;
+                *) NVM_ARCH="${HOST_ARCH}" ;;
+            esac
+            wget https://unofficial-builds.nodejs.org/download/release/v18.4.0/node-v18.4.0-linux-$NVM_ARCH.tar.gz
+            tar -C /usr/local --strip-components 1 -xzf node-v18.4.0-linux-$NVM_ARCH.tar.gz
+            rm node-v18.4.0-linux-$NVM_ARCH.tar.gz
+        else
+            apt install -y nodejs npm
+        fi
+
         node -v
         npm -v
-
-        bash "$SCRIPTPATH/vercmp.sh" "$(npm -v)" "6.14.0"
-        if [[ $? -eq 2 ]]; then
-            npm install -g npm@latest-6
-            npm -v
-        fi
 
         update-ca-certificates -f
 
