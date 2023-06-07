@@ -49,6 +49,25 @@ install_nodejs() {
     rm "$FILE_NAME"
 }
 
+function install_gcc {
+    local GCC_VERSION
+    GCC_VERSION="$(apt-cache madison gcc | grep -oP "\d+(\.\d+)+" | sort -u -r | head -n 1)"
+    bash "$SCRIPTPATH/vercmp.sh" "$GCC_VERSION" "8.4.0"
+    if [[ $? -eq 2 ]]; then
+        retry 10 apt install -y gcc-8 g++-8
+
+        update-alternatives --remove-all gcc
+        update-alternatives --remove-all g++
+
+        update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 10
+        update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 10
+        update-alternatives --install /usr/bin/cc cc /usr/bin/gcc 30
+        update-alternatives --set cc /usr/bin/gcc
+        update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++ 30
+        update-alternatives --set c++ /usr/bin/g++
+    fi
+}
+
 unameOut="$(uname -s)"
 arch="x64"
 case "${unameOut}" in
@@ -61,23 +80,14 @@ case "${unameOut}" in
         apt clean
         apt update
         retry 10 apt install -y apt-transport-https ca-certificates \
-            git build-essential gcc-8 g++-8 ccache ninja-build pkg-config \
+            git build-essential ccache ninja-build pkg-config \
             python3-pip python3-all-dev \
             libicu-dev aria2 libopenblas-dev wget \
             lsb mono-complete nuget
 
-        update-alternatives --remove-all gcc
-        update-alternatives --remove-all g++
-
-        update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 10
-        update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 10
-        update-alternatives --install /usr/bin/cc cc /usr/bin/gcc 30
-        update-alternatives --set cc /usr/bin/gcc
-        update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++ 30
-        update-alternatives --set c++ /usr/bin/g++
-
         wget -O /usr/lib/nuget/NuGet.exe https://dist.nuget.org/win-x86-commandline/v4.9.6/nuget.exe
 
+        install_gcc
         install_nodejs
 
         boost_version="$(apt-cache madison libboost-all-dev | grep -oP "\d+(\.\d+)+")"
@@ -108,10 +118,22 @@ case "${unameOut}" in
             }
         }
 
+        printf "lsb_release: \n"
         lsb_release -a
+
+        printf "gcc version: \n"
+        gcc --version
+
+        printf "mono version: \n"
         mono -V
+
+        printf "node version: \n"
         node -v
+
+        printf "npm version: \n"
         npm -v
+
+        printf "cmake version: \n"
         cmake --version
         ;;
     Darwin*)

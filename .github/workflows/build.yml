@@ -117,17 +117,37 @@ jobs:
                 rm "$FILE_NAME"
             }
 
+            function install_gcc {
+              local GCC_VERSION
+              GCC_VERSION="$(apt-cache madison gcc | grep -oP "\d+(\.\d+)+" | sort -u -r | head -n 1)"
+              bash "$SCRIPTPATH/vercmp.sh" "$GCC_VERSION" "8.4.0"
+              if [[ $? -eq 2 ]]; then
+                  retry 10 apt install -y gcc-8 g++-8
+
+                  update-alternatives --remove-all gcc
+                  update-alternatives --remove-all g++
+
+                  update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 10
+                  update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 10
+                  update-alternatives --install /usr/bin/cc cc /usr/bin/gcc 30
+                  update-alternatives --set cc /usr/bin/gcc
+                  update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++ 30
+                  update-alternatives --set c++ /usr/bin/g++
+              fi
+            }
+
             export DEBIAN_FRONTEND=noninteractive
             export TZ=UTC
 
             apt update
             apt install -y apt-transport-https ca-certificates \
-                git build-essential gcc-8 g++-8 libboost-all-dev \
+                git build-essential libboost-all-dev \
                 python3-pip ninja-build pkg-config wget \
                 lsb mono-complete nuget
 
             wget -O /usr/lib/nuget/NuGet.exe https://dist.nuget.org/win-x86-commandline/v4.9.6/nuget.exe
 
+            install_gcc
             install_nodejs
 
             hash cmake 2>/dev/null || {
@@ -163,9 +183,6 @@ jobs:
             echo ::set-output name=uname::$(uname -a)
 
             git config --global --add safe.directory '*'
-
-            export CC=/usr/bin/gcc-8
-            export CXX=/usr/bin/g++-8
 
             export RELEASE_VERSION="1.${{ github.run_number }}.${{ github.run_attempt }}"
 
