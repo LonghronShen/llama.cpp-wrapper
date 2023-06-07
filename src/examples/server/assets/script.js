@@ -50,6 +50,8 @@ function chatStripe(isAi, value, uniqueId) {
     `;
 }
 
+const session_id = "1234"; // generateUniqueId();
+
 const handleSubmit = async (e) => {
   e.preventDefault();
 
@@ -72,6 +74,21 @@ const handleSubmit = async (e) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       prompt: data.get("prompt"),
+      session_id: session_id,
+      model: "ggml-vic13b-uncensored-q8_0.bin",
+      ignore_eos: true,
+      stop_prompts: [
+        "User: "
+      ],
+      max_tokens: 2048,
+      n_ctx: 2048,
+      repeat_last_n: 256,
+      batch_size: 1024,
+      threads: 0,
+      temperature: 0.7,
+      top_k: 40,
+      top_p: 0.5,
+      repeat_penalty: 1.17647
     }),
   });
 

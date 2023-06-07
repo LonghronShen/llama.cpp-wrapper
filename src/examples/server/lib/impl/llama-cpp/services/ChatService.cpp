@@ -45,8 +45,8 @@ std::string ChatService::map_model_path(const std::string &name) const {
 }
 
 std::size_t ChatService::get_threads_count(std::size_t count) const {
-  const auto &hardware_threads =
-      llama_cpp::internal::threading::get_processor_count();
+  const auto &hardware_threads = (std::size_t)std::floor(
+      llama_cpp::internal::threading::get_processor_count() * 0.8);
   if (count == 0 || count > hardware_threads) {
     count = hardware_threads;
   }
