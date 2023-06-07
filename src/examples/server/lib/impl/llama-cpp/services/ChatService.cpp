@@ -25,7 +25,7 @@ void ChatService::scan_for_models(const std::string &path) {
   const auto &items = get_files_in_directory(path);
   for (const auto &entry : items) {
     const auto &[fileName, filePath, isDirectory] = entry;
-    if (isDirectory) {
+    if (!isDirectory) {
       this->_models.emplace(fileName, filePath);
     }
   }

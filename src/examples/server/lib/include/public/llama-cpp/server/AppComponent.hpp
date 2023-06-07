@@ -7,6 +7,8 @@
 #include <oatpp/web/server/AsyncHttpConnectionHandler.hpp>
 #include <oatpp/web/server/HttpConnectionHandler.hpp>
 #include <oatpp/web/server/HttpRouter.hpp>
+#include <oatpp/web/server/interceptor/AllowCorsGlobal.hpp>
+
 
 #include <llama-cpp/server/ErrorHandler.hpp>
 #include <llama-cpp/server/SwaggerComponent.hpp>
@@ -70,6 +72,14 @@ public:
         oatpp::web::server::HttpConnectionHandler::createShared(router);
     connectionHandler->setErrorHandler(
         std::make_shared<ErrorHandler>(objectMapper));
+
+    /* Add CORS-enabling interceptors */
+    connectionHandler->addRequestInterceptor(
+        std::make_shared<
+            oatpp::web::server::interceptor::AllowOptionsGlobal>());
+    connectionHandler->addResponseInterceptor(
+        std::make_shared<oatpp::web::server::interceptor::AllowCorsGlobal>());
+
     return connectionHandler;
   }());
 };

@@ -55,6 +55,8 @@ add_controllers(std::shared_ptr<oatpp::web::server::HttpRouter> router,
 void run() {
   register_signal_handler();
 
+  fprintf(stdout, "system_info: %s\n", llama_print_system_info());
+
   AppComponent components; // Create scope Environment components
 
   /* Get router component */
