@@ -1,6 +1,12 @@
-FROM ubuntu:22.04 as builder
+ARG BASE_IMAGE=ubuntu:22.04
+FROM ${BASE_IMAGE} as builder
+
+ARG HTTPS_PROXY=
 
 WORKDIR /app
+
+# RUN sed -i 's@//.*archive.ubuntu.com@//mirrors.ustc.edu.cn@g' /etc/apt/sources.list && \
+#     sed -i 's/security.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
 
 COPY ./utilities/bootstrap.sh ./utilities/bootstrap.sh
 
@@ -10,7 +16,8 @@ COPY . .
 
 RUN bash ./utilities/build.sh
 
-FROM ubuntu:22.04 as runner
+ARG BASE_IMAGE=ubuntu:22.04
+FROM ${BASE_IMAGE} as runner
 
 WORKDIR /app
 

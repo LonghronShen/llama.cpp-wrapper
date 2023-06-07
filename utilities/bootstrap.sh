@@ -66,6 +66,16 @@ case "${unameOut}" in
             libicu-dev aria2 libopenblas-dev wget \
             lsb mono-complete nuget
 
+        update-alternatives --remove-all gcc
+        update-alternatives --remove-all g++
+
+        update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 10
+        update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 10
+        update-alternatives --install /usr/bin/cc cc /usr/bin/gcc 30
+        update-alternatives --set cc /usr/bin/gcc
+        update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++ 30
+        update-alternatives --set c++ /usr/bin/g++
+
         wget -O /usr/lib/nuget/NuGet.exe https://dist.nuget.org/win-x86-commandline/v4.9.6/nuget.exe
 
         install_nodejs
