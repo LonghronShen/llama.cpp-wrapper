@@ -2,11 +2,15 @@ version: '2'
 services:
   v2ray:
     image: llama_cpp_wrapper:latest
-    build: .
+    build:
+      context: .
+      args:
+        HTTPS_PROXY: ""
+        BASE_IMAGE: ubuntu:22.04
     restart: always
     privileged: true
     ports:
-    - "5000:5000"
+      - "5000:5000"
     volumes:
-    - "./models:/app/models"
-    - "./prompts:/app/prompts"
+      - "./models:/app/models"
+      - "./prompts:/app/prompts"
