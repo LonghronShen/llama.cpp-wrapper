@@ -43,3 +43,12 @@ target_include_directories(${project_name}-server-lib
     PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include/public"
     PRIVATE "${CMAKE_CURRENT_LIST_DIR}/include/private"
 )
+
+if(Boost_FOUND)
+    target_link_libraries(${project_name}-server-lib
+        PUBLIC Boost::boost
+        PUBLIC Boost::filesystem
+    )
+
+    target_compile_definitions(${project_name}-server-lib PUBLIC "LLAMA_CPP_SERVER_USE_BOOST")
+endif()

@@ -44,9 +44,9 @@ install_nodejs() {
     local FILE_NAME="node-$NVM_VERSION-linux-$NVM_ARCH.tar.gz"
     local URL="$NVM_MIRROR/$NVM_VERSION/$FILE_NAME"
 
-    wget "$NVM_MIRROR/$NVM_VERSION/node-$NVM_VERSION-linux-$NVM_ARCH.tar.gz"
-    tar -C /usr/local --strip-components 1 -xzf node-v18.4.0-linux-$NVM_ARCH.tar.gz
-    rm node-v18.4.0-linux-$NVM_ARCH.tar.gz
+    wget "$URL"
+    tar -C /usr/local --strip-components 1 -xzf "$FILE_NAME"
+    rm "$FILE_NAME"
 }
 
 unameOut="$(uname -s)"
@@ -61,7 +61,7 @@ case "${unameOut}" in
         apt clean
         apt update
         retry 10 apt install -y apt-transport-https ca-certificates \
-            git build-essential ccache ninja-build pkg-config \
+            git build-essential gcc-8 g++-8 ccache ninja-build pkg-config \
             python3-pip python3-all-dev \
             libicu-dev aria2 libopenblas-dev wget \
             lsb mono-complete nuget
@@ -69,8 +69,6 @@ case "${unameOut}" in
         wget -O /usr/lib/nuget/NuGet.exe https://dist.nuget.org/win-x86-commandline/v4.9.6/nuget.exe
 
         install_nodejs
-
-        update-ca-certificates -f
 
         boost_version="$(apt-cache madison libboost-all-dev | grep -oP "\d+(\.\d+)+")"
         bash "$SCRIPTPATH/vercmp.sh" "$boost_version" "1.66"
@@ -84,7 +82,21 @@ case "${unameOut}" in
             retry 10 apt install -y libboost1.68-dev
         fi
 
-        hash cmake 2>/dev/null || { pip3 install -i https://mirrors.aliyun.com/pypi/simple cmake; }
+        hash cmake 2>/dev/null || {
+            export PIP_ONLY_BINARY=cmake
+            python3 -m pip install --upgrade pip
+            python3 -m pip install cmake || {
+                echo "Build CMake from source ..."
+                cd /tmp
+                git clone -b 'v3.25.1' --single-branch --depth 1 https://github.com/Kitware/CMake.git CMake
+                cd CMake
+                ./bootstrap --prefix=/usr/local
+                make -j$(nproc)
+                make install
+                cd ..
+                rm -rf CMake
+            }
+        }
 
         lsb_release -a
         mono -V

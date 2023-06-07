@@ -112,9 +112,9 @@ jobs:
                 local FILE_NAME="node-$NVM_VERSION-linux-$NVM_ARCH.tar.gz"
                 local URL="$NVM_MIRROR/$NVM_VERSION/$FILE_NAME"
 
-                wget "$NVM_MIRROR/$NVM_VERSION/node-$NVM_VERSION-linux-$NVM_ARCH.tar.gz"
-                tar -C /usr/local --strip-components 1 -xzf node-v18.4.0-linux-$NVM_ARCH.tar.gz
-                rm node-v18.4.0-linux-$NVM_ARCH.tar.gz
+                wget "$URL"
+                tar -C /usr/local --strip-components 1 -xzf "$FILE_NAME"
+                rm "$FILE_NAME"
             }
 
             export DEBIAN_FRONTEND=noninteractive
@@ -130,19 +130,20 @@ jobs:
 
             install_nodejs
 
-            python3 -m pip install --upgrade pip
-            PIP_ONLY_BINARY=cmake python3 -m pip install cmake || true
-
             hash cmake 2>/dev/null || {
-                echo "Build CMake from source ..."
-                cd /tmp
-                git clone -b 'v3.25.1' --single-branch --depth 1 https://github.com/Kitware/CMake.git CMake
-                cd CMake
-                ./bootstrap --prefix=/usr/local
-                make -j$(nproc)
-                make install
-                cd ..
-                rm -rf CMake
+              export PIP_ONLY_BINARY=cmake
+              python3 -m pip install --upgrade pip
+              python3 -m pip install cmake || {
+                  echo "Build CMake from source ..."
+                  cd /tmp
+                  git clone -b 'v3.25.1' --single-branch --depth 1 https://github.com/Kitware/CMake.git CMake
+                  cd CMake
+                  ./bootstrap --prefix=/usr/local
+                  make -j$(nproc)
+                  make install
+                  cd ..
+                  rm -rf CMake
+              }
             }
 
             lsb_release -a

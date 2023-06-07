@@ -1,7 +1,6 @@
 #ifndef E1276BBD_C319_4ECB_9C70_5C4449F3AD35
 #define E1276BBD_C319_4ECB_9C70_5C4449F3AD35
 
-#include "mime-types/core.hpp"
 #include <cctype>
 #include <cstddef>
 #include <iomanip>
@@ -14,7 +13,9 @@
 #include <vector>
 
 #include <cmrc/cmrc.hpp>
+#include <mime-types/core.hpp>
 #include <mime-types/mime_mapper.hpp>
+
 
 #include <oatpp/core/macro/codegen.hpp>
 #include <oatpp/core/macro/component.hpp>
