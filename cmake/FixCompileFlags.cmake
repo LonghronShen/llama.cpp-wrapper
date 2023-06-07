@@ -60,6 +60,10 @@ else()
                 endfunction()
             endif()
         else()
+            if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.4)
+                message(FATAL_ERROR "GCC version must be at least 8.4!")
+            endif()
+
             add_compile_options("-fPIC")
 
             if(CMAKE_BUILD_TYPE STREQUAL "Debug")

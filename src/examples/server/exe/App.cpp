@@ -53,6 +53,8 @@ add_controllers(std::shared_ptr<oatpp::web::server::HttpRouter> router,
 }
 
 void run() {
+  register_signal_handler();
+
   AppComponent components; // Create scope Environment components
 
   /* Get router component */

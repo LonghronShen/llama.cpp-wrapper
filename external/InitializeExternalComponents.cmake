@@ -23,7 +23,7 @@ if(WIN32)
   endif()
 endif()
 
-find_package(Boost 1.65.1 COMPONENTS thread log log_setup system program_options filesystem coroutine locale regex unit_test_framework serialization)
+find_package(Boost 1.63 COMPONENTS thread log log_setup system program_options filesystem coroutine locale regex unit_test_framework serialization)
 
 if(Boost_FOUND)
   message(STATUS "** Boost Include: ${Boost_INCLUDE_DIR}")
@@ -35,7 +35,7 @@ else()
   else()
     FetchContent_Declare(boost_cmake
       GIT_REPOSITORY https://github.com/Orphis/boost-cmake.git
-      GIT_TAG d3951bc7f0b9d09005f92aedcf6acfc595f050ea)
+      GIT_TAG master)
 
     FetchContent_GetProperties(boost_cmake)
 

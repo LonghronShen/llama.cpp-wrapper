@@ -59,6 +59,21 @@ jobs:
 
             set -x
 
+            retry() {
+                local -r -i max_attempts="$1"
+                shift
+                local -i attempt_num=1
+                until "$@"; do
+                    if ((attempt_num == max_attempts)); then
+                        echo "Attempt $attempt_num failed and there are no more attempts left!"
+                        return 1
+                    else
+                        echo "Attempt $attempt_num failed! Trying again in $attempt_num seconds..."
+                        sleep $((attempt_num++))
+                    fi
+                done
+            }
+
             vercmp() {
                 if [[ $1 == "$2" ]]; then
                     echo "0"
@@ -117,23 +132,41 @@ jobs:
                 rm "$FILE_NAME"
             }
 
-            function install_gcc {
-              local GCC_VERSION
-              GCC_VERSION="$(apt-cache madison gcc | grep -oP "\d+(\.\d+)+" | sort -u -r | head -n 1)"
-              bash "$SCRIPTPATH/vercmp.sh" "$GCC_VERSION" "8.4.0"
-              if [[ $? -eq 2 ]]; then
-                  retry 10 apt install -y gcc-8 g++-8
+            install_gcc() {
+                local GCC_VERSION
+                GCC_VERSION="$(apt-cache madison gcc | grep -oP "\d+(\.\d+)+" | sort -u -r | head -n 1)"
+                GCC_VERSION_CMP="$(vercmp "$GCC_VERSION" "8.4.0")"
+                if [[ $GCC_VERSION_CMP -eq 2 ]]; then
+                    retry 10 apt install -y gcc-8 g++-8
 
-                  update-alternatives --remove-all gcc
-                  update-alternatives --remove-all g++
+                    update-alternatives --remove-all gcc
+                    update-alternatives --remove-all g++
 
-                  update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 10
-                  update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 10
-                  update-alternatives --install /usr/bin/cc cc /usr/bin/gcc 30
-                  update-alternatives --set cc /usr/bin/gcc
-                  update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++ 30
-                  update-alternatives --set c++ /usr/bin/g++
-              fi
+                    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 10
+                    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 10
+                    update-alternatives --install /usr/bin/cc cc /usr/bin/gcc 30
+                    update-alternatives --set cc /usr/bin/gcc
+                    update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++ 30
+                    update-alternatives --set c++ /usr/bin/g++
+                fi
+            }
+
+            install_cmake() {
+                hash cmake 2>/dev/null || {
+                    export PIP_ONLY_BINARY=cmake
+                    python3 -m pip install --upgrade pip
+                    python3 -m pip install cmake || {
+                        echo "Build CMake from source ..."
+                        cd /tmp
+                        git clone -b 'v3.25.1' --single-branch --depth 1 https://github.com/Kitware/CMake.git CMake
+                        cd CMake
+                        ./bootstrap --prefix=/usr/local
+                        make -j$(nproc)
+                        make install
+                        cd ..
+                        rm -rf CMake
+                    }
+                }
             }
 
             export DEBIAN_FRONTEND=noninteractive
@@ -149,27 +182,24 @@ jobs:
 
             install_gcc
             install_nodejs
+            install_cmake
 
-            hash cmake 2>/dev/null || {
-              export PIP_ONLY_BINARY=cmake
-              python3 -m pip install --upgrade pip
-              python3 -m pip install cmake || {
-                  echo "Build CMake from source ..."
-                  cd /tmp
-                  git clone -b 'v3.25.1' --single-branch --depth 1 https://github.com/Kitware/CMake.git CMake
-                  cd CMake
-                  ./bootstrap --prefix=/usr/local
-                  make -j$(nproc)
-                  make install
-                  cd ..
-                  rm -rf CMake
-              }
-            }
-
+            printf "lsb_release: \n"
             lsb_release -a
+
+            printf "gcc version: \n"
+            gcc --version
+
+            printf "mono version: \n"
             mono -V
+
+            printf "node version: \n"
             node -v
+
+            printf "npm version: \n"
             npm -v
+
+            printf "cmake version: \n"
             cmake --version
 
           # Set an output parameter `uname` for use in subsequent steps
