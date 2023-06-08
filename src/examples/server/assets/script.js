@@ -69,11 +69,13 @@ const handleSubmit = async (e) => {
   const messageDiv = document.getElementById(uniqueId);
   loader(messageDiv);
 
+  const request = data.get("prompt");
+
   const response = await fetch("/api/prompt", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      prompt: data.get("prompt"),
+      prompt: request,
       session_id: session_id,
       model: "ggml-vic13b-uncensored-q8_0.bin",
       ignore_eos: true,
@@ -96,7 +98,7 @@ const handleSubmit = async (e) => {
   messageDiv.innerHTML = "";
   if (response.ok) {
     const data = await response.json();
-    const parsedData = data.bot.trim();
+    const parsedData = data.bot.replace(request, "").trim();
     typeText(messageDiv, parsedData);
   } else {
     const err = await response.text();
