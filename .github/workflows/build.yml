@@ -307,13 +307,10 @@ jobs:
             make
             patch
             binutils
-            boost
           pacboy: >-
             toolchain:p
             cmake:p
             ninja:p
-            libevent:p
-            pcre2:p
       - name: Build
         run: |
           #!/bin/bash
