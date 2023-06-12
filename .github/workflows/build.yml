@@ -311,6 +311,7 @@ jobs:
             toolchain:p
             cmake:p
             ninja:p
+            boost:p
       - name: Build
         run: |
           #!/bin/bash
