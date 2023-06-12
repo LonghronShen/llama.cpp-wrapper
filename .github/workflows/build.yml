@@ -139,8 +139,8 @@ jobs:
                 if [[ $GCC_VERSION_CMP -eq 2 ]]; then
                     retry 10 apt install -y gcc-8 g++-8
 
-                    update-alternatives --remove-all gcc
-                    update-alternatives --remove-all g++
+                    update-alternatives --remove-all gcc || true
+                    update-alternatives --remove-all g++ || true
 
                     update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 10
                     update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 10
@@ -250,8 +250,8 @@ jobs:
 
           set -xe
 
-          brew install libevent zlib pcre2 pkgconfig openssl boost icu4c ninja
-          brew link --force openssl boost pcre2 libevent icu4c
+          brew install pkgconfig openssl boost icu4c ninja
+          brew link --force openssl boost icu4c
 
           alias nproc="sysctl -n hw.logicalcpu"
 

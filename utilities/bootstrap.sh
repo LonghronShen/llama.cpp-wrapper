@@ -82,8 +82,8 @@ install_gcc() {
     if [[ $GCC_VERSION_CMP -eq 2 ]]; then
         retry 10 apt install -y gcc-8 g++-8
 
-        update-alternatives --remove-all gcc
-        update-alternatives --remove-all g++
+        update-alternatives --remove-all gcc || true
+        update-alternatives --remove-all g++ || true
 
         update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 10
         update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 10
