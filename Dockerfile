@@ -16,8 +16,15 @@ COPY . .
 
 RUN bash ./utilities/build.sh
 
+# =================================================================
 ARG BASE_IMAGE=ubuntu:22.04
 FROM ${BASE_IMAGE} as runner
+
+ARG TARGETPLATFORM
+ENV TARGETPLATFORM=${TARGETPLATFORM:-linux/amd64}
+ARG TARGETARCH
+ENV TARGETARCH=${TARGETARCH:-amd64}
+ARG BUILDPLATFORM
 
 ARG HTTPS_PROXY=
 
@@ -27,6 +34,9 @@ ARG HTTPS_PROXY=
 WORKDIR /app
 
 COPY --from=builder /app/build/bin/llama-cpp-wrapper-server-exe llama-cpp-wrapper-server-exe
+COPY --from=builder /app/utilities/install_runtime_deps.sh install_runtime_deps.sh
+
+RUN chmod a+x install_runtime_deps.sh && ./install_runtime_deps.sh
 
 EXPOSE 5000
 
