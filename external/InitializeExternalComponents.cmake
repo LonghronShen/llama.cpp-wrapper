@@ -27,7 +27,7 @@ if(WIN32)
   endif()
 endif()
 
-find_package(Boost 1.63 COMPONENTS thread log log_setup system program_options filesystem coroutine locale regex unit_test_framework serialization)
+find_package(Boost 1.63 OPTIONAL_COMPONENTS thread log log_setup system program_options filesystem coroutine locale regex unit_test_framework serialization)
 
 if(Boost_FOUND)
   message(STATUS "** Boost Include: ${Boost_INCLUDE_DIR}")
